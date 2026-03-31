@@ -1,0 +1,12 @@
+---
+// Страница вещества — читает ?cas= или ?id= из URL, данные грузит клиентский компонент
+import Layout from '../../layouts/Layout.astro'
+import SubstancePage from '../../components/SubstancePage'
+---
+
+<Layout
+  title="Chemical Hazard Information"
+  description="GHS/CLP hazard classification, H-statements, pictograms and ATE values."
+>
+  <SubstancePage client:load />
+</Layout>

@@ -1,0 +1,27 @@
+---
+// Страница Калькулятора ATE смесей (Инструмент 1)
+import Layout from '../../layouts/Layout.astro'
+import ATECalculator from '../../components/tools/ATECalculator'
+---
+
+<Layout
+  title="Mixture ATE Calculator — Acute Toxicity Estimate"
+  description="Calculate the Acute Toxicity Estimate (ATE) for chemical mixtures according to GHS/CLP. Free online tool for SDS authors and EHS professionals."
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-10">
+      <h1 class="text-3xl font-bold text-gray-900">
+        Mixture ATE Calculator
+      </h1>
+      <p class="mt-3 text-lg text-gray-600">
+        Calculate Acute Toxicity Estimate for mixtures using the GHS formula:
+        <code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
+          100 / ATEmix = Σ(Ci / ATEi)
+        </code>
+      </p>
+    </div>
+
+    <!-- React компонент калькулятора (клиентский) -->
+    <ATECalculator client:load />
+  </div>
+</Layout>

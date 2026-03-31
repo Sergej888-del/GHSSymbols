@@ -1,0 +1,21 @@
+---
+// Страница базы данных химических веществ
+// Данные загружаются на клиенте — без Supabase в frontmatter
+import Layout from '../../layouts/Layout.astro'
+import HazardsDatabase from '../../components/HazardsDatabase'
+---
+
+<Layout
+  title="Chemical Hazards Database"
+  description="Browse GHS hazard classifications, H-statements, and pictograms for 5000+ chemicals from ECHA CLP Annex VI."
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-gray-900 mb-4">
+      Chemical Hazards Database
+    </h1>
+    <p class="text-gray-600 mb-8">
+      5,000+ substances with harmonized GHS/CLP classifications from ECHA.
+    </p>
+    <HazardsDatabase client:load />
+  </div>
+</Layout>

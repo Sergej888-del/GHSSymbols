@@ -1,0 +1,24 @@
+---
+// Страница Матрицы совместимости хранения (Инструмент 2)
+import Layout from '../../layouts/Layout.astro'
+import StorageMatrix from '../../components/tools/StorageMatrix'
+---
+
+<Layout
+  title="Chemical Storage Compatibility Matrix"
+  description="Check GHS chemical storage compatibility. Color-coded matrix showing which hazard classes can be stored together safely."
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-10">
+      <h1 class="text-3xl font-bold text-gray-900">
+        Chemical Storage Compatibility Matrix
+      </h1>
+      <p class="mt-3 text-lg text-gray-600">
+        Select chemicals to check storage compatibility based on GHS hazard class segregation rules.
+      </p>
+    </div>
+
+    <!-- React компонент матрицы (клиентский) -->
+    <StorageMatrix client:load />
+  </div>
+</Layout>
