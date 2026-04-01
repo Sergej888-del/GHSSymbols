@@ -43,12 +43,7 @@ interface SubstanceData {
   p_statement_codes: string[] | null
 }
 
-const H_CATEGORY_STYLE: Record<string, string> = {
-  physical:      'bg-orange-50 border-orange-200 text-orange-800',
-  health:        'bg-red-50 border-red-200 text-red-800',
-  environmental: 'bg-teal-50 border-teal-200 text-teal-800',
-  eu_specific:   'bg-gray-50 border-gray-200 text-gray-700',
-}
+const H_STATEMENT_STYLE = 'bg-red-50 border-red-200 text-red-800'
 
 interface Props {
   initialCas?: string
@@ -310,13 +305,9 @@ export default function SubstancePage({ initialCas }: Props = {}) {
           <div className="space-y-2">
             {hStatements.length > 0 ? (
               hStatements.map(h => {
-                const cat = h.code.startsWith('EUH') ? 'eu_specific'
-                          : h.code < 'H300'           ? 'physical'
-                          : h.code < 'H400'           ? 'health'
-                          :                             'environmental'
                 return (
                   <div key={h.code}
-                    className={`flex gap-3 items-start px-4 py-3 rounded-lg border text-sm ${H_CATEGORY_STYLE[cat]}`}
+                    className={`flex gap-3 items-start px-4 py-3 rounded-lg border text-sm ${H_STATEMENT_STYLE}`}
                   >
                     <span className="font-bold font-mono shrink-0 w-14">{h.code}</span>
                     <p className="font-medium">{h.text_en}</p>
