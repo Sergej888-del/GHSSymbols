@@ -1,0 +1,121 @@
+---
+import Layout from '../../layouts/Layout.astro'
+
+const faqs = [
+  {
+    q: 'How many GHS symbols are there?',
+    a: 'There are exactly <strong>9 official GHS hazard pictograms</strong>: GHS01 (Exploding Bomb), GHS02 (Flame), GHS03 (Flame Over Circle), GHS04 (Gas Cylinder), GHS05 (Corrosion), GHS06 (Skull and Crossbones), GHS07 (Exclamation Mark), GHS08 (Health Hazard), and GHS09 (Environmental). Each pictogram covers one or more hazard classes as defined by the UN Globally Harmonized System. You can see all 9 pictograms and the chemicals they apply to in our <a href="/hazards" class="text-blue-700 underline hover:text-blue-900">hazards database</a>.',
+  },
+  {
+    q: 'What are GHS symbols?',
+    a: 'GHS symbols — formally called <strong>GHS hazard pictograms</strong> — are standardized graphic icons used on chemical labels and Safety Data Sheets (SDS) worldwide. They are part of the <strong>Globally Harmonized System of Classification and Labelling of Chemicals (GHS)</strong>, a framework developed by the United Nations to create a universal language for chemical hazard communication. Each symbol is a black icon inside a red diamond, and each one communicates a specific type of hazard — such as flammability, toxicity, or environmental danger. Learn more in our blog article: <a href="/blog/what-are-ghs-symbols" class="text-blue-700 underline hover:text-blue-900">What Are GHS Symbols? Complete Guide to Hazard Pictograms</a>.',
+  },
+  {
+    q: 'What does a GHS symbol mean?',
+    a: 'Each GHS symbol communicates the <strong>type and severity of hazard</strong> a chemical presents. For example: a flame symbol (GHS02) means the substance is flammable; a skull and crossbones (GHS06) means it is acutely toxic; a health hazard symbol (GHS08) means it may be a carcinogen, mutagen, or reproductive toxin. The symbol always appears alongside a <strong>signal word</strong> (DANGER or WARNING) and one or more <strong>hazard statements</strong> (H-phrases) that specify the exact hazard. See our complete reference: <a href="/blog/ghs-hazard-symbols-meanings" class="text-blue-700 underline hover:text-blue-900">GHS Hazard Symbols and Meanings</a>.',
+  },
+  {
+    q: 'What is a GHS symbol?',
+    a: 'A GHS symbol is a <strong>standardized hazard pictogram</strong> defined by the United Nations GHS document. It is a black-and-white graphic enclosed in a red diamond-shaped border, printed on chemical labels and SDS documents. GHS symbols replaced dozens of different national labelling systems with a single globally consistent approach. In the EU, GHS symbols are mandated by <strong>CLP Regulation (EC) No 1272/2008</strong>. In the USA, they are required by OSHA\'s Hazard Communication Standard (HazCom 2012). Search our <a href="/hazards" class="text-blue-700 underline hover:text-blue-900">database of 4,178 classified substances</a> to find GHS symbols for any chemical.',
+  },
+  {
+    q: 'Where can you find GHS symbols?',
+    a: 'GHS symbols appear in three main places: <strong>(1) Chemical labels</strong> — on containers of hazardous substances and mixtures, required by law in most countries; <strong>(2) Safety Data Sheets (SDS)</strong> — in Section 2 (Hazard Identification), which must include all applicable pictograms; <strong>(3) Hazard databases</strong> — such as the <a href="/hazards" class="text-blue-700 underline hover:text-blue-900">ECHA CLP Annex VI database on this site</a>, which lists harmonized classifications for over 4,000 substances. In the EU, manufacturers must apply GHS symbols before placing any hazardous chemical on the market. Workplace safety signage and storage area markings may also use GHS-based symbols.',
+  },
+  {
+    q: 'What is the GHS symbol for flammable?',
+    a: 'The GHS symbol for flammable substances is <strong>GHS02 — the Flame pictogram</strong>. It applies to flammable gases (H220, H221), flammable aerosols (H222, H223), flammable liquids (H224, H225, H226), flammable solids (H228), pyrophoric substances (H250), self-heating substances (H251, H252), and substances that emit flammable gas on contact with water (H260, H261). The most common case is flammable liquids — any liquid with a flash point below 60°C requires the GHS02 flame symbol. The signal word is <strong>DANGER</strong> for Categories 1–2 and <strong>WARNING</strong> for Categories 3–4. Browse <a href="/hazards" class="text-blue-700 underline hover:text-blue-900">flammable chemicals in our database</a>.',
+  },
+  {
+    q: 'What is the GHS symbol for toxic?',
+    a: 'There are two GHS symbols related to toxicity: <strong>GHS06 (Skull and Crossbones)</strong> for high acute toxicity (Categories 1–3), and <strong>GHS07 (Exclamation Mark)</strong> for lower acute toxicity (Category 4). GHS06 appears on substances where the oral LD50 is ≤ 300 mg/kg, the dermal LD50 is ≤ 1,000 mg/kg, or the inhalation LC50 is ≤ 10 mg/L/4h. The signal word is always <strong>DANGER</strong> for GHS06. Category 4 (ATE oral ≤ 2,000 mg/kg) uses GHS07 with signal word <strong>WARNING</strong>. For long-term toxic effects (carcinogens, STOT), the <strong>GHS08 Health Hazard</strong> symbol applies instead. Learn more in our article: <a href="/blog/ghs-hazard-symbols-meanings" class="text-blue-700 underline hover:text-blue-900">GHS Hazard Symbols and Meanings</a>.',
+  },
+  {
+    q: 'What is the GHS symbol for corrosive?',
+    a: 'The GHS symbol for corrosive substances is <strong>GHS05 — the Corrosion pictogram</strong>, which shows a liquid dripping onto a surface and a hand, both being eaten away. It applies to: substances causing <strong>skin corrosion</strong> (H314 — Causes severe skin burns and eye damage), substances causing <strong>serious eye damage</strong> (H318 — Causes serious eye damage), and substances <strong>corrosive to metals</strong> (H290 — May be corrosive to metals). The signal word for H314 and H318 is <strong>DANGER</strong>. Common corrosives include sulfuric acid, sodium hydroxide, hydrochloric acid, and hydrogen fluoride. Search for corrosive chemicals in our <a href="/hazards" class="text-blue-700 underline hover:text-blue-900">hazards database</a>.',
+  },
+  {
+    q: 'Can GHS symbols be used on all chemicals?',
+    a: 'GHS symbols are only required on chemicals that meet the <strong>classification criteria</strong> for one or more hazard classes. Non-hazardous chemicals — those that do not meet any classification threshold — do not carry GHS pictograms. In the EU under CLP, manufacturers and importers must classify their substances and mixtures before placing them on the market. If a substance is on the <strong>ECHA CLP Annex VI harmonized classification list</strong>, the listed classification is mandatory. For substances not on Annex VI, manufacturers perform their own "self-classification" based on available data. Our <a href="/hazards" class="text-blue-700 underline hover:text-blue-900">database covers 4,178 harmonized substances from Annex VI</a>.',
+  },
+  {
+    q: 'What are the 9 GHS pictograms?',
+    a: 'The 9 official GHS pictograms are: <strong>GHS01</strong> — Exploding Bomb (explosives, organic peroxides); <strong>GHS02</strong> — Flame (flammable gases, liquids, solids, pyrophoric); <strong>GHS03</strong> — Flame Over Circle (oxidisers); <strong>GHS04</strong> — Gas Cylinder (gases under pressure); <strong>GHS05</strong> — Corrosion (skin corrosion, eye damage, corrosive to metals); <strong>GHS06</strong> — Skull and Crossbones (acute toxicity Cat 1–3); <strong>GHS07</strong> — Exclamation Mark (acute toxicity Cat 4, irritants, sensitisers); <strong>GHS08</strong> — Health Hazard (carcinogens, mutagens, reprotoxins, STOT, aspiration); <strong>GHS09</strong> — Environmental (aquatic toxicity). Read our full guide: <a href="/blog/what-are-ghs-symbols" class="text-blue-700 underline hover:text-blue-900">What Are GHS Symbols? Complete Guide to Hazard Pictograms</a>.',
+  },
+]
+
+const schemaJson = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: a.replace(/<[^>]+>/g, ''),
+    },
+  })),
+})
+---
+
+<Layout
+  title="Chemical Safety FAQ — GHS Symbols & Hazard Classification"
+  description="Answers to the most common questions about GHS hazard symbols, pictograms, signal words and chemical safety classification. Trusted by EHS professionals."
+  canonical="https://ghssymbols.com/faq"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={schemaJson} />
+  </Fragment>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+    <h1 class="text-4xl font-bold text-gray-900 mb-3">Chemical Safety FAQ</h1>
+    <p class="text-gray-500 mb-12 text-lg">
+      Common questions about GHS hazard symbols, pictograms and chemical classification — answered by our EHS team.
+    </p>
+
+    <div class="space-y-3">
+      {faqs.map((faq, i) => (
+        <details
+          class="group border border-gray-200 rounded-xl overflow-hidden"
+          {...(i === 0 ? { open: true } : {})}
+        >
+          <summary class="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none bg-white hover:bg-gray-50 transition-colors">
+            <span class="font-semibold text-gray-900 text-base">{faq.q}</span>
+            <span class="shrink-0 w-5 h-5 text-gray-400 transition-transform duration-200 group-open:rotate-180">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </span>
+          </summary>
+          <div class="px-6 pb-6 pt-2 text-gray-600 text-sm leading-relaxed border-t border-gray-100 bg-gray-50"
+            set:html={faq.a}
+          />
+        </details>
+      ))}
+    </div>
+
+    <!-- CTA блок -->
+    <div class="mt-16 bg-blue-950 rounded-2xl p-8 text-center">
+      <h2 class="text-xl font-bold text-white mb-2">Still have questions?</h2>
+      <p class="text-blue-200 text-sm mb-6">
+        Search our database of 4,178 classified substances with complete GHS pictograms, H-statements and ATE values.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="/hazards"
+          class="bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-orange-600 transition-colors">
+          Browse Chemicals Database
+        </a>
+        <a href="/blog"
+          class="bg-white text-blue-950 px-6 py-3 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-colors">
+          Read Our Blog
+        </a>
+      </div>
+    </div>
+
+  </div>
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker { display: none; }
+</style>
