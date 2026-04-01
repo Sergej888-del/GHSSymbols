@@ -1,104 +1,28 @@
 ---
 import Layout from '../../layouts/Layout.astro'
+import SubstancePage from '../../components/SubstancePage'
 import { supabase } from '../../lib/supabase'
 
 export async function getStaticPaths() {
-  console.log('🔍 Загружаем вещества из Supabase...')
-  
-  const { data: substances, error } = await supabase
+  const { data: substances } = await supabase
     .from('substances')
-   .select('cas_number, iupac_name, common_name')
+    .select('cas_number, iupac_name, common_name')
     .not('cas_number', 'is', null)
-
-  console.log('📊 Результат:', substances?.length, 'веществ')
-  console.log('❌ Ошибка:', error)
 
   return (substances || []).map((s) => ({
     params: { cas: s.cas_number },
- props: { name: s.common_name || s.iupac_name }   
+    props: { name: s.common_name || s.iupac_name }
   }))
 }
 
 const { cas } = Astro.params
 const { name } = Astro.props
-
-const { data: substance } = await supabase
-  .from('substances')
-  .select('*')
-  .eq('cas_number', cas)
-  .single()
 ---
+
 <Layout
-  title={`${substance?.iupac_name || name} — GHS Hazard Information`}
-  description={`GHS/CLP hazard classification and H-statements for ${substance?.iupac_name || name}. CAS ${cas}.`}
+  title={`${name} — GHS Hazard Information`}
+  description={`GHS/CLP hazard classification, H-statements and pictograms for ${name}. CAS ${cas}.`}
+  canonical={`https://ghssymbols.com/hazards/${cas}`}
 >
-  <div class="max-w-4xl mx-auto px-4 py-8">
-
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">
-      {substance?.iupac_name || name}
-    </h1>
-
-    <p class="text-gray-500 mb-6">CAS Number: <strong>{cas}</strong></p>
-
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-      <h2 class="text-xl font-semibold mb-4">GHS Classification</h2>
-
-      {substance?.signal_word && (
-        <div class="mb-4">
-          <span class="font-medium">Signal Word:</span>
-          <span class={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${
-            substance.signal_word === 'Danger'
-              ? 'bg-red-100 text-red-800'
-              : 'bg-yellow-100 text-yellow-800'
-          }`}>
-            {substance.signal_word}
-          </span>
-        </div>
-      )}
-
-      {substance?.ghs_pictogram_codes && substance.ghs_pictogram_codes.length > 0 && (
-        <div class="mb-4">
-          <span class="font-medium">Pictograms:</span>
-          <div class="flex gap-2 mt-2 flex-wrap">
-            {substance.ghs_pictogram_codes.map((code: string) => (
-              <span class="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-mono">
-                {code}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {substance?.h_statement_codes && substance.h_statement_codes.length > 0 && (
-        <div class="mb-4">
-          <span class="font-medium">Hazard Statements:</span>
-          <div class="flex gap-2 mt-2 flex-wrap">
-            {substance.h_statement_codes.map((code: string) => (
-              <span class="px-2 py-1 bg-red-50 border border-red-200 rounded text-sm font-mono text-red-700">
-                {code}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {substance?.p_statement_codes && substance.p_statement_codes.length > 0 && (
-        <div class="mb-4">
-          <span class="font-medium">Precautionary Statements:</span>
-          <div class="flex gap-2 mt-2 flex-wrap">
-            {substance.p_statement_codes.map((code: string) => (
-              <span class="px-2 py-1 bg-green-50 border border-green-200 rounded text-sm font-mono text-green-700">
-                {code}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-
-    <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-500">
-      ⚠️ This information is for reference only. Always consult official SDS documentation.
-    </div>
-
-  </div>
+  <SubstancePage client:load initialCas={cas} />
 </Layout>

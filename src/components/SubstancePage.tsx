@@ -50,7 +50,11 @@ const H_CATEGORY_STYLE: Record<string, string> = {
   eu_specific:   'bg-gray-50 border-gray-200 text-gray-700',
 }
 
-export default function SubstancePage() {
+interface Props {
+  initialCas?: string
+}
+
+export default function SubstancePage({ initialCas }: Props = {}) {
   const [substance, setSubstance] = useState<SubstanceData | null>(null)
   const [pictograms, setPictograms] = useState<Pictogram[]>([])
   const [hStatements, setHStatements] = useState<HStatement[]>([])
@@ -66,7 +70,7 @@ export default function SubstancePage() {
   useEffect(() => {
     async function load() {
       const params = new URLSearchParams(window.location.search)
-      const cas = params.get('cas')
+      const cas = initialCas ?? params.get('cas')
       const id  = params.get('id')
 
       if (!cas && !id) { setNotFound(true); setLoading(false); return }
