@@ -27,6 +27,11 @@ const canonicalUrl = canonical ?? `${siteUrl}${Astro.url.pathname}`
     <link rel="canonical" href={canonicalUrl} />
     <title>{title} | GHS Symbols</title>
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
@@ -38,15 +43,15 @@ const canonicalUrl = canonical ?? `${siteUrl}${Astro.url.pathname}`
   </head>
   <body class="bg-white text-gray-900 font-sans antialiased">
     <!-- Навигация -->
-    <header class="border-b border-gray-200 bg-white sticky top-0 z-50">
+    <header class="bg-[#062A78] sticky top-0 z-50">
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-2 font-bold text-xl text-orange-600">
+        <a href="/" class="flex items-center gap-2 font-bold text-xl text-white">
           GHS Symbols
         </a>
-        <ul class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-          <li><a href="/tools/ate-calculator" class="hover:text-orange-600 transition-colors">ATE Calculator</a></li>
-          <li><a href="/tools/storage-matrix" class="hover:text-orange-600 transition-colors">Storage Matrix</a></li>
-          <li><a href="/hazards" class="hover:text-orange-600 transition-colors">Hazards DB</a></li>
+        <ul class="hidden md:flex items-center gap-6 text-sm font-medium text-blue-200">
+          <li><a href="/tools/ate-calculator" class="hover:text-white transition-colors">ATE Calculator</a></li>
+          <li><a href="/tools/storage-matrix" class="hover:text-white transition-colors">Storage Matrix</a></li>
+          <li><a href="/hazards" class="hover:text-white transition-colors">Hazards DB</a></li>
         </ul>
       </nav>
     </header>
@@ -57,12 +62,14 @@ const canonicalUrl = canonical ?? `${siteUrl}${Astro.url.pathname}`
     </main>
 
     <!-- Футер -->
-    <footer class="border-t border-gray-200 mt-24 py-12 bg-gray-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm text-gray-500 text-center">
-        <p>© 2026 GHS Symbols. Chemical safety tools for EHS professionals.</p>
+    <footer class="bg-[#062A78] mt-24 py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm text-blue-200 text-center">
+        <p class="text-white font-semibold mb-2">GHS Symbols</p>
+        <p>Chemical safety tools for EHS professionals.</p>
         <p class="mt-2">
-          Data source: <a href="https://echa.europa.eu" class="underline hover:text-gray-700">ECHA CLP Annex VI</a>
+          Data source: <a href="https://echa.europa.eu" class="underline hover:text-white">ECHA CLP Annex VI</a>
         </p>
+        <p class="mt-4 text-blue-300">© 2026 GHS Symbols</p>
       </div>
     </footer>
   </body>

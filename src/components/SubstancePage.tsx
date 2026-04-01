@@ -1,5 +1,4 @@
 // Клиентский компонент страницы вещества
-// Читает ?cas= или ?id= из URL, загружает данные из Supabase
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -11,6 +10,12 @@ interface Pictogram {
 }
 
 interface HStatement {
+  code: string
+  text_en: string
+  text_ru: string | null
+}
+
+interface PStatement {
   code: string
   text_en: string
   text_ru: string | null
@@ -35,6 +40,7 @@ interface SubstanceData {
   h_statement_codes: string[] | null
   ghs_pictogram_codes: string[] | null
   signal_word: string | null
+  p_statement_codes: string[] | null
 }
 
 const H_CATEGORY_STYLE: Record<string, string> = {
@@ -48,10 +54,10 @@ export default function SubstancePage() {
   const [substance, setSubstance] = useState<SubstanceData | null>(null)
   const [pictograms, setPictograms] = useState<Pictogram[]>([])
   const [hStatements, setHStatements] = useState<HStatement[]>([])
+  const [pStatements, setPStatements] = useState<PStatement[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
-  // Состояние модалки PDF
   const [emailModal, setEmailModal] = useState(false)
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
@@ -69,7 +75,7 @@ export default function SubstancePage() {
         'id, iupac_name, common_name, cas_number, ec_number, un_number, ' +
         'molecular_formula, molecular_weight, flash_point, boiling_point, ' +
         'ate_oral, ate_dermal, ate_inhalation_vapour, svhc_status, svhc_reason, ' +
-        'h_statement_codes, ghs_pictogram_codes, signal_word'
+        'h_statement_codes, ghs_pictogram_codes, signal_word, p_statement_codes'
       )
       q = cas ? q.eq('cas_number', cas) : q.eq('id', id!)
       const { data: sub } = await q.single()
@@ -79,24 +85,28 @@ export default function SubstancePage() {
 
       const picCodes = (sub as SubstanceData).ghs_pictogram_codes ?? []
       const hCodes   = (sub as SubstanceData).h_statement_codes   ?? []
+      const pCodes   = (sub as SubstanceData).p_statement_codes   ?? []
 
-      const [picRes, hRes] = await Promise.all([
+      const [picRes, hRes, pRes] = await Promise.all([
         picCodes.length > 0
           ? supabase.from('pictograms_signals').select('code, name_en, svg_content, signal_word_en').in('code', picCodes)
           : Promise.resolve({ data: [] }),
         hCodes.length > 0
           ? supabase.from('h_statements').select('code, text_en, text_ru').in('code', hCodes)
           : Promise.resolve({ data: [] }),
+        pCodes.length > 0
+          ? supabase.from('p_statements').select('code, text_en, text_ru').in('code', pCodes)
+          : Promise.resolve({ data: [] }),
       ])
 
       setPictograms(((picRes.data ?? []) as Pictogram[]).sort((a, b) => a.code.localeCompare(b.code)))
       setHStatements(((hRes.data ?? []) as HStatement[]).sort((a, b) => a.code.localeCompare(b.code)))
+      setPStatements(((pRes.data ?? []) as PStatement[]).sort((a, b) => a.code.localeCompare(b.code)))
       setLoading(false)
     }
     load()
   }, [])
 
-  // Сохранить email и скачать PDF
   const submitAndDownload = async () => {
     if (!email.includes('@')) { setEmailError('Enter a valid email address'); return }
     setSubmitting(true)
@@ -120,6 +130,10 @@ export default function SubstancePage() {
 
     const hRows = hStatements.map(h =>
       `<tr><td style="font-weight:600;font-family:monospace;white-space:nowrap">${h.code}</td><td>${h.text_en}</td></tr>`
+    ).join('')
+
+    const pRows = pStatements.map(p =>
+      `<tr><td style="font-weight:600;font-family:monospace;white-space:nowrap;color:#1a6b3c">${p.code}</td><td>${p.text_en}</td></tr>`
     ).join('')
 
     const picItems = pictograms.map(p => `
@@ -177,6 +191,10 @@ export default function SubstancePage() {
         <table><thead><tr><th style="width:70px">Code</th><th>Statement</th></tr></thead>
         <tbody>${hRows}</tbody></table>` : ''}
 
+      ${pRows ? `<h2>Precautionary Statements</h2>
+        <table><thead><tr><th style="width:70px">Code</th><th>Statement</th></tr></thead>
+        <tbody>${pRows}</tbody></table>` : ''}
+
       ${(substance.molecular_weight || substance.flash_point !== null || substance.boiling_point) ? `
         <h2>Physical Properties</h2>
         <div class="props">
@@ -211,9 +229,7 @@ export default function SubstancePage() {
   }
 
   if (loading) return (
-    <div className="max-w-4xl mx-auto px-4 py-20 text-center text-gray-400 text-lg">
-      Loading…
-    </div>
+    <div className="max-w-4xl mx-auto px-4 py-20 text-center text-gray-400 text-lg">Loading…</div>
   )
 
   if (notFound || !substance) return (
@@ -226,7 +242,7 @@ export default function SubstancePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-      {/* ── Заголовок ───────────────────────────────────────────────────────── */}
+      {/* Заголовок */}
       <div className="mb-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -262,7 +278,7 @@ export default function SubstancePage() {
         )}
       </div>
 
-      {/* ── GHS Пиктограммы ─────────────────────────────────────────────────── */}
+      {/* GHS Пиктограммы */}
       {pictograms.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">GHS Pictograms</h2>
@@ -283,7 +299,7 @@ export default function SubstancePage() {
         </section>
       )}
 
-      {/* ── H-фразы ─────────────────────────────────────────────────────────── */}
+      {/* H-фразы */}
       {(hStatements.length > 0 || (substance.h_statement_codes?.length ?? 0) > 0) && (
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Hazard Statements</h2>
@@ -306,9 +322,7 @@ export default function SubstancePage() {
             ) : (
               <div className="flex flex-wrap gap-2">
                 {substance.h_statement_codes!.map(code => (
-                  <span key={code} className="bg-gray-100 text-gray-700 px-3 py-1 rounded font-mono text-sm">
-                    {code}
-                  </span>
+                  <span key={code} className="bg-gray-100 text-gray-700 px-3 py-1 rounded font-mono text-sm">{code}</span>
                 ))}
               </div>
             )}
@@ -316,7 +330,32 @@ export default function SubstancePage() {
         </section>
       )}
 
-      {/* ── Физические свойства ─────────────────────────────────────────────── */}
+      {/* P-фразы */}
+      {(pStatements.length > 0 || (substance.p_statement_codes?.length ?? 0) > 0) && (
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Precautionary Statements</h2>
+          <div className="space-y-2">
+            {pStatements.length > 0 ? (
+              pStatements.map(p => (
+                <div key={p.code}
+                  className="flex gap-3 items-start px-4 py-3 rounded-lg border text-sm bg-green-50 border-green-200 text-green-800"
+                >
+                  <span className="font-bold font-mono shrink-0 w-14">{p.code}</span>
+                  <p className="font-medium">{p.text_en}</p>
+                </div>
+              ))
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {substance.p_statement_codes!.map(code => (
+                  <span key={code} className="bg-gray-100 text-gray-700 px-3 py-1 rounded font-mono text-sm">{code}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Физические свойства */}
       {(substance.flash_point !== null || substance.boiling_point || substance.molecular_weight) && (
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Physical Properties</h2>
@@ -346,7 +385,7 @@ export default function SubstancePage() {
         </section>
       )}
 
-      {/* ── ATE значения ────────────────────────────────────────────────────── */}
+      {/* ATE */}
       {(substance.ate_oral || substance.ate_dermal || substance.ate_inhalation_vapour) && (
         <section className="mb-8 bg-orange-50 rounded-2xl p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Acute Toxicity Estimates (ATE)</h2>
@@ -377,20 +416,19 @@ export default function SubstancePage() {
         </section>
       )}
 
-      {/* ── SVHC ────────────────────────────────────────────────────────────── */}
+      {/* SVHC */}
       {substance.svhc_status && (
         <section className="mb-8 bg-red-50 border border-red-200 rounded-2xl p-6">
           <h2 className="text-xl font-semibold text-red-800 mb-2">SVHC — Substance of Very High Concern</h2>
           <p className="text-red-700 text-sm">
-            {substance.svhc_reason ||
-              'Listed as SVHC under REACH. Suppliers must provide Safety Data Sheets and notify customers.'}
+            {substance.svhc_reason || 'Listed as SVHC under REACH. Suppliers must provide Safety Data Sheets and notify customers.'}
           </p>
         </section>
       )}
 
       <a href="/hazards" className="text-sm text-gray-500 hover:text-orange-600">← Back to database</a>
 
-      {/* ── Модалка захвата email ────────────────────────────────────────────── */}
+      {/* Модалка email */}
       {emailModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">

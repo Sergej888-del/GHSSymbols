@@ -1,10 +1,8 @@
 // Калькулятор ATE смесей (Инструмент 1)
-// Алгоритм: 100 / ATEmix = Σ(Ci / ATEi) для всех компонентов ≥ 1%
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Substance, MixtureComponent } from '../../lib/supabase'
 
-// Категории острой токсичности по GHS (мг/кг, перорально)
 const ATE_CATEGORIES = {
   oral: [
     { cat: 1, max: 5 },
@@ -24,6 +22,21 @@ const ATE_CATEGORIES = {
     { cat: 3, max: 10.0 },
     { cat: 4, max: 20.0 },
   ],
+}
+
+// H-фразы по маршруту и категории
+const H_CODES: Record<string, Record<number, string>> = {
+  oral:              { 1: 'H300', 2: 'H300', 3: 'H301', 4: 'H302' },
+  dermal:            { 1: 'H310', 2: 'H310', 3: 'H311', 4: 'H312' },
+  inhalation_vapour: { 1: 'H330', 2: 'H330', 3: 'H331', 4: 'H332' },
+}
+
+// Пиктограммы по категории острой токсичности
+function getPictogramCode(minCat: number | null): string[] {
+  if (!minCat) return []
+  if (minCat <= 3) return ['GHS06']
+  if (minCat === 4) return ['GHS07']
+  return []
 }
 
 function getCategory(ate: number, type: keyof typeof ATE_CATEGORIES): number | null {
@@ -46,6 +59,22 @@ function calculateATEmix(components: MixtureComponent[], field: keyof MixtureCom
   return totalKnown / sumRatio
 }
 
+interface Pictogram {
+  code: string
+  name_en: string
+  svg_content: string | null
+}
+
+interface HStatement {
+  code: string
+  text_en: string
+}
+
+interface PStatement {
+  code: string
+  text_en: string
+}
+
 type CalcResult = {
   ate_oral: number | null
   ate_dermal: number | null
@@ -54,6 +83,8 @@ type CalcResult = {
   cat_dermal: number | null
   cat_inhalation: number | null
   signal_word: string
+  pictogram_codes: string[]
+  h_codes: string[]
 }
 
 export default function ATECalculator() {
@@ -64,12 +95,14 @@ export default function ATECalculator() {
   const [searchResults, setSearchResults] = useState<Substance[]>([])
   const [activeSearchIdx, setActiveSearchIdx] = useState<number | null>(null)
   const [result, setResult] = useState<CalcResult | null>(null)
+  const [pictograms, setPictograms] = useState<Pictogram[]>([])
+  const [hStatements, setHStatements] = useState<HStatement[]>([])
+  const [pStatements, setPStatements] = useState<PStatement[]>([])
   const [emailModal, setEmailModal] = useState(false)
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  // Авто-загрузка вещества из URL параметра ?substance=CAS
   useEffect(() => {
     const cas = new URLSearchParams(window.location.search).get('substance')
     if (!cas) return
@@ -96,20 +129,16 @@ export default function ATECalculator() {
       })
   }, [])
 
-  // Поиск вещества в Supabase (три отдельных запроса — .or() с ilike падает)
   const searchSubstance = async (query: string, idx: number) => {
     setSearchTexts(prev => ({ ...prev, [idx]: query }))
     setActiveSearchIdx(idx)
     if (query.length < 2) { setSearchResults([]); return }
-
     const sel = 'id, iupac_name, common_name, cas_number, ate_oral, ate_dermal, ate_inhalation_vapour, ate_inhalation_dust'
     const [r1, r2, r3] = await Promise.all([
       supabase.from('substances').select(sel).ilike('iupac_name', `%${query}%`).limit(6),
       supabase.from('substances').select(sel).ilike('common_name', `%${query}%`).limit(6),
       supabase.from('substances').select(sel).eq('cas_number', query).limit(3),
     ])
-
-    // Объединяем и дедуплицируем по id
     const seen = new Set<string>()
     const merged: Substance[] = []
     for (const row of [...(r1.data ?? []), ...(r2.data ?? []), ...(r3.data ?? [])]) {
@@ -120,7 +149,6 @@ export default function ATECalculator() {
     setSearchResults(merged)
   }
 
-  // Выбор вещества из дропдауна
   const selectSubstance = (substance: Substance, idx: number) => {
     const displayName = substance.common_name ?? substance.iupac_name
     setComponents(prev => prev.map((c, i) => i !== idx ? c : {
@@ -166,19 +194,66 @@ export default function ATECalculator() {
 
   const totalConcentration = components.reduce((s, c) => s + c.concentration, 0)
 
-  const calculate = () => {
+  const calculate = async () => {
     const ate_oral = calculateATEmix(components, 'ate_oral')
     const ate_dermal = calculateATEmix(components, 'ate_dermal')
     const ate_inhalation_vapour = calculateATEmix(components, 'ate_inhalation_vapour')
     const cat_oral = ate_oral ? getCategory(ate_oral, 'oral') : null
     const cat_dermal = ate_dermal ? getCategory(ate_dermal, 'dermal') : null
     const cat_inhalation = ate_inhalation_vapour ? getCategory(ate_inhalation_vapour, 'inhalation_vapour') : null
+
     const minCat = Math.min(...[cat_oral, cat_dermal, cat_inhalation].filter(Boolean) as number[])
-    const signal_word = minCat <= 2 ? 'DANGER' : minCat <= 4 ? 'WARNING' : 'Not classified'
-    setResult({ ate_oral, ate_dermal, ate_inhalation_vapour, cat_oral, cat_dermal, cat_inhalation, signal_word })
+    const signal_word = isFinite(minCat) ? (minCat <= 2 ? 'DANGER' : 'WARNING') : 'Not classified'
+
+    // Собираем H-коды
+    const hCodesSet = new Set<string>()
+    if (cat_oral)    hCodesSet.add(H_CODES.oral[cat_oral])
+    if (cat_dermal)  hCodesSet.add(H_CODES.dermal[cat_dermal])
+    if (cat_inhalation) hCodesSet.add(H_CODES.inhalation_vapour[cat_inhalation])
+    const h_codes = Array.from(hCodesSet).sort()
+
+    // Пиктограммы
+    const pictogram_codes = getPictogramCode(isFinite(minCat) ? minCat : null)
+
+    setResult({ ate_oral, ate_dermal, ate_inhalation_vapour, cat_oral, cat_dermal, cat_inhalation, signal_word, pictogram_codes, h_codes })
+
+    // Загружаем SVG пиктограмм из БД
+    if (pictogram_codes.length > 0) {
+      const { data } = await supabase
+        .from('pictograms_signals')
+        .select('code, name_en, svg_content')
+        .in('code', pictogram_codes)
+      setPictograms((data ?? []) as Pictogram[])
+    } else {
+      setPictograms([])
+    }
+
+    // Загружаем H-statements
+    if (h_codes.length > 0) {
+      const { data } = await supabase
+        .from('h_statements')
+        .select('code, text_en')
+        .in('code', h_codes)
+      setHStatements(((data ?? []) as HStatement[]).sort((a, b) => a.code.localeCompare(b.code)))
+    } else {
+      setHStatements([])
+    }
+
+    // P-statements для острой токсичности по категории
+    const pCodes: string[] = ['P101', 'P102', 'P103', 'P260', 'P264', 'P270', 'P501']
+    if (isFinite(minCat)) {
+      if (minCat <= 2) pCodes.push('P280', 'P301', 'P310', 'P330')
+      if (minCat === 3) pCodes.push('P280', 'P301', 'P311', 'P330')
+      if (minCat === 4) pCodes.push('P270', 'P301', 'P312', 'P330')
+    }
+    const uniquePCodes = [...new Set(pCodes)].sort()
+    const { data: pData } = await supabase
+      .from('p_statements')
+      .select('code, text_en')
+      .in('code', uniquePCodes)
+    setPStatements(((pData ?? []) as PStatement[]).sort((a, b) => a.code.localeCompare(b.code)))
   }
 
-  // Сохранить email в Supabase и скачать PDF
   const submitAndDownload = async () => {
     if (!email.includes('@')) { setEmailError('Enter a valid email address'); return }
     setSubmitting(true)
@@ -195,7 +270,6 @@ export default function ATECalculator() {
     downloadPdf()
   }
 
-  // Печать / сохранение как PDF через браузерный диалог
   const downloadPdf = () => {
     if (!result) return
     const date = new Date().toLocaleDateString('en-GB')
@@ -210,8 +284,24 @@ export default function ATECalculator() {
           <td>${c.ate_oral ?? '—'}</td>
           <td>${c.ate_dermal ?? '—'}</td>
           <td>${c.ate_inhalation_vapour ?? '—'}</td>
-        </tr>`)
-      .join('')
+        </tr>`).join('')
+
+    const picItems = pictograms.map(p => `
+      <div style="display:inline-flex;flex-direction:column;align-items:center;gap:4px;width:80px;margin:4px">
+        <div style="width:72px;height:72px;border:2px solid #111;border-radius:4px;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden">
+          ${p.svg_content ? `<div style="width:64px;height:64px">${p.svg_content}</div>` : `<span style="font-size:10px;font-weight:700">${p.code}</span>`}
+        </div>
+        <span style="font-size:9px;text-align:center;color:#555">${p.name_en}</span>
+        <span style="font-size:9px;font-family:monospace;color:#999">${p.code}</span>
+      </div>`).join('')
+
+    const hRows = hStatements.map(h =>
+      `<tr><td style="font-weight:600;font-family:monospace;color:#991b1b">${h.code}</td><td>${h.text_en}</td></tr>`
+    ).join('')
+
+    const pRows = pStatements.map(p =>
+      `<tr><td style="font-weight:600;font-family:monospace;color:#1a6b3c">${p.code}</td><td>${p.text_en}</td></tr>`
+    ).join('')
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>ATE Report</title>
@@ -219,23 +309,32 @@ export default function ATECalculator() {
         body { font-family: Arial, sans-serif; font-size: 13px; margin: 40px; color: #111; }
         h1 { font-size: 20px; margin-bottom: 4px; }
         .meta { color: #666; font-size: 11px; margin-bottom: 20px; }
-        h2 { font-size: 14px; margin: 24px 0 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+        h2 { font-size: 13px; font-weight:700; margin: 22px 0 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; text-transform:uppercase; letter-spacing:.04em; color:#444; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th { background: #f5f5f5; text-align: left; padding: 6px 8px; border: 1px solid #ddd; }
-        td { padding: 6px 8px; border: 1px solid #eee; }
-        .results { margin-top: 20px; }
-        .row { display: flex; gap: 32px; margin-bottom: 6px; }
-        .label { color: #666; width: 180px; }
-        .value { font-weight: bold; }
-        .signal { display: inline-block; margin-top: 12px; padding: 6px 20px; border-radius: 20px;
-                  font-weight: bold; font-size: 15px;
-                  background: ${result.signal_word === 'DANGER' ? '#dc2626' : result.signal_word === 'WARNING' ? '#facc15' : '#e5e7eb'};
-                  color: ${result.signal_word === 'DANGER' ? '#fff' : '#111'}; }
-        .formula { margin-top: 28px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 12px; }
-        @media print { body { margin: 20px; } }
+        td { padding: 6px 8px; border: 1px solid #eee; vertical-align:top; }
+        .results { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:12px; }
+        .res-box { background:#f9f9f9; padding:10px 14px; border-radius:6px; min-width:130px; }
+        .res-label { font-size:10px; color:#888; margin-bottom:2px; }
+        .res-value { font-weight:bold; font-size:18px; }
+        .res-unit { font-size:10px; color:#888; }
+        .res-cat { display:inline-block; margin-top:6px; font-size:11px; font-weight:bold; padding:2px 8px; border-radius:10px; }
+        .cat-danger { background:#fee2e2; color:#991b1b; }
+        .cat-warning { background:#fef9c3; color:#92400e; }
+        .signal { display:inline-block; margin:12px 0; padding:6px 20px; border-radius:20px; font-weight:bold; font-size:15px;
+                  background:${result.signal_word === 'DANGER' ? '#dc2626' : result.signal_word === 'WARNING' ? '#facc15' : '#e5e7eb'};
+                  color:${result.signal_word === 'DANGER' ? '#fff' : '#111'}; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .formula { margin-top:28px; font-size:11px; color:#888; border-top:1px solid #eee; padding-top:12px; }
+        @media print { body { margin: 20px; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+        svg { max-width:100%; max-height:100%; }
       </style></head><body>
+
       <h1>ATE Mixture Calculation Report</h1>
       <div class="meta">Generated: ${date} &nbsp;|&nbsp; ghssymbols.com &nbsp;|&nbsp; Method: UN GHS Rev.9, Section 3.1.3.6</div>
+
+      <div class="signal">${result.signal_word}</div>
+
+      ${picItems ? `<h2>GHS Pictograms</h2><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${picItems}</div>` : ''}
 
       <h2>Mixture Components</h2>
       <table>
@@ -246,17 +345,19 @@ export default function ATECalculator() {
         <tbody>${rows}</tbody>
       </table>
 
-      <h2>Results</h2>
+      <h2>Calculation Results</h2>
       <div class="results">
-        ${result.ate_oral ? `<div class="row"><span class="label">ATEmix Oral</span><span class="value">${result.ate_oral.toFixed(0)} mg/kg bw${result.cat_oral ? ' — Category ' + result.cat_oral : ''}</span></div>` : ''}
-        ${result.ate_dermal ? `<div class="row"><span class="label">ATEmix Dermal</span><span class="value">${result.ate_dermal.toFixed(0)} mg/kg bw${result.cat_dermal ? ' — Category ' + result.cat_dermal : ''}</span></div>` : ''}
-        ${result.ate_inhalation_vapour ? `<div class="row"><span class="label">ATEmix Inhalation</span><span class="value">${result.ate_inhalation_vapour.toFixed(3)} mg/L/4h${result.cat_inhalation ? ' — Category ' + result.cat_inhalation : ''}</span></div>` : ''}
-        <div class="signal">${result.signal_word}</div>
+        ${result.ate_oral ? `<div class="res-box"><div class="res-label">ATEmix Oral</div><div class="res-value">${result.ate_oral.toFixed(0)}</div><div class="res-unit">mg/kg bw</div>${result.cat_oral ? `<div class="res-cat ${result.cat_oral <= 2 ? 'cat-danger' : 'cat-warning'}">Category ${result.cat_oral}</div>` : ''}</div>` : ''}
+        ${result.ate_dermal ? `<div class="res-box"><div class="res-label">ATEmix Dermal</div><div class="res-value">${result.ate_dermal.toFixed(0)}</div><div class="res-unit">mg/kg bw</div>${result.cat_dermal ? `<div class="res-cat ${result.cat_dermal <= 2 ? 'cat-danger' : 'cat-warning'}">Category ${result.cat_dermal}</div>` : ''}</div>` : ''}
+        ${result.ate_inhalation_vapour ? `<div class="res-box"><div class="res-label">ATEmix Inhalation</div><div class="res-value">${result.ate_inhalation_vapour.toFixed(3)}</div><div class="res-unit">mg/L/4h</div>${result.cat_inhalation ? `<div class="res-cat ${result.cat_inhalation <= 2 ? 'cat-danger' : 'cat-warning'}">Category ${result.cat_inhalation}</div>` : ''}</div>` : ''}
       </div>
 
+      ${hRows ? `<h2>Hazard Statements</h2><table><thead><tr><th style="width:70px">Code</th><th>Statement</th></tr></thead><tbody>${hRows}</tbody></table>` : ''}
+      ${pRows ? `<h2>Precautionary Statements</h2><table><thead><tr><th style="width:70px">Code</th><th>Statement</th></tr></thead><tbody>${pRows}</tbody></table>` : ''}
+
       <div class="formula">
-        Formula: 100 / ATE<sub>mix</sub> = &Sigma;(C<sub>i</sub> / ATE<sub>i</sub>) for all components with concentration &ge; 1%<br>
-        Reference: UN GHS Rev.9, Chapter 3.1
+        Formula: 100 / ATE<sub>mix</sub> = &Sigma;(C<sub>i</sub> / ATE<sub>i</sub>) for all components &ge; 1%<br>
+        Reference: UN GHS Rev.9, Chapter 3.1. This report is for informational purposes only.
       </div>
     </body></html>`
 
@@ -274,7 +375,6 @@ export default function ATECalculator() {
       <div className="space-y-3">
         {components.map((comp, idx) => (
           <div key={idx} className="relative border border-gray-200 rounded-xl p-4 bg-white">
-            {/* Строка 1: поиск + кнопка удаления */}
             <div className="flex gap-2 items-start">
               <div className="flex-1 relative">
                 <input
@@ -302,37 +402,23 @@ export default function ATECalculator() {
                 )}
               </div>
               {components.length > 1 && (
-                <button
-                  onClick={() => removeComponent(idx)}
-                  className="text-gray-400 hover:text-red-500 p-2 transition-colors shrink-0"
-                >
-                  ✕
-                </button>
+                <button onClick={() => removeComponent(idx)} className="text-gray-400 hover:text-red-500 p-2 transition-colors shrink-0">✕</button>
               )}
             </div>
 
-            {/* Разделитель */}
             <div className="border-t border-gray-100 mt-3 pt-3">
               <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">Concentration</span>
             </div>
-
-            {/* Ползунок + числовое поле */}
             <div className="flex items-center gap-3 mt-2">
               <input
-                type="range"
-                min="0"
-                max="100"
-                step="0.1"
+                type="range" min="0" max="100" step="0.1"
                 value={comp.concentration}
                 onChange={e => updateConcentration(idx, e.target.value)}
                 className="flex-1 accent-orange-500 cursor-pointer h-2"
               />
               <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden shrink-0">
                 <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.1"
+                  type="number" min="0" max="100" step="0.1"
                   value={comp.concentration || ''}
                   onChange={e => updateConcentration(idx, e.target.value)}
                   className="w-14 px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-orange-400"
@@ -340,8 +426,6 @@ export default function ATECalculator() {
                 <span className="px-1.5 text-gray-400 text-sm bg-gray-50 self-stretch flex items-center border-l border-gray-300">%</span>
               </div>
             </div>
-
-            {/* ATE значения */}
             {comp.name && (
               <div className="flex gap-4 mt-2 text-xs text-gray-500">
                 {comp.ate_oral && <span>Oral: {comp.ate_oral} mg/kg</span>}
@@ -359,12 +443,9 @@ export default function ATECalculator() {
         {Math.abs(totalConcentration - 100) > 0.1 && ' (should equal 100%)'}
       </div>
 
-      {/* Кнопки действий */}
+      {/* Кнопки */}
       <div className="flex gap-3">
-        <button
-          onClick={addComponent}
-          className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:border-orange-400 hover:text-orange-600 transition-colors"
-        >
+        <button onClick={addComponent} className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:border-orange-400 hover:text-orange-600 transition-colors">
           + Add Component
         </button>
         <button
@@ -378,10 +459,41 @@ export default function ATECalculator() {
 
       {/* Результаты */}
       {result && (
-        <div className="border border-orange-200 rounded-2xl p-6 bg-orange-50">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Calculation Results</h3>
+        <div className="border border-orange-200 rounded-2xl p-6 bg-orange-50 space-y-6">
+          <h3 className="text-lg font-bold text-gray-900">Calculation Results</h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          {/* Сигнальное слово */}
+          <div className={`inline-block px-5 py-2 rounded-full font-bold text-sm ${
+            result.signal_word === 'DANGER' ? 'bg-red-600 text-white' :
+            result.signal_word === 'WARNING' ? 'bg-yellow-400 text-yellow-900' :
+            'bg-gray-200 text-gray-600'
+          }`}>
+            {result.signal_word}
+          </div>
+
+          {/* Пиктограммы */}
+          {pictograms.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">GHS Pictograms</h4>
+              <div className="flex flex-wrap gap-4">
+                {pictograms.map(p => (
+                  <div key={p.code} className="flex flex-col items-center gap-1 w-20">
+                    <div className="w-20 h-20 border-2 border-black rounded flex items-center justify-center bg-white">
+                      {p.svg_content
+                        ? <div className="w-16 h-16 overflow-hidden [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: p.svg_content }} />
+                        : <span className="text-xs font-bold text-gray-500">{p.code}</span>
+                      }
+                    </div>
+                    <span className="text-xs text-center text-gray-500 leading-tight">{p.name_en}</span>
+                    <span className="text-xs font-mono text-gray-400">{p.code}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ATE значения */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {result.ate_oral && (
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <div className="text-xs text-gray-500 mb-1">ATEmix Oral</div>
@@ -420,16 +532,39 @@ export default function ATECalculator() {
             )}
           </div>
 
-          {/* Сигнальное слово */}
-          <div className={`inline-block px-4 py-2 rounded-full font-bold text-sm mb-6 ${result.signal_word === 'DANGER' ? 'bg-red-600 text-white' : result.signal_word === 'WARNING' ? 'bg-yellow-400 text-yellow-900' : 'bg-gray-200 text-gray-600'}`}>
-            {result.signal_word}
-          </div>
+          {/* H-statements */}
+          {hStatements.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Hazard Statements</h4>
+              <div className="space-y-2">
+                {hStatements.map(h => (
+                  <div key={h.code} className="flex gap-3 items-start px-4 py-3 rounded-lg border text-sm bg-red-50 border-red-200 text-red-800">
+                    <span className="font-bold font-mono shrink-0 w-14">{h.code}</span>
+                    <p className="font-medium">{h.text_en}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* P-statements */}
+          {pStatements.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Precautionary Statements</h4>
+              <div className="space-y-2">
+                {pStatements.map(p => (
+                  <div key={p.code} className="flex gap-3 items-start px-4 py-3 rounded-lg border text-sm bg-green-50 border-green-200 text-green-800">
+                    <span className="font-bold font-mono shrink-0 w-14">{p.code}</span>
+                    <p className="font-medium">{p.text_en}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Кнопка PDF */}
           <div className="bg-white rounded-xl p-4 border border-orange-200">
-            <p className="text-sm font-medium text-gray-900 mb-3">
-              Download a PDF report for your SDS documentation
-            </p>
+            <p className="text-sm font-medium text-gray-900 mb-3">Download a PDF report for your SDS documentation</p>
             <button
               onClick={() => setEmailModal(true)}
               className="bg-orange-600 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors"
@@ -440,14 +575,12 @@ export default function ATECalculator() {
         </div>
       )}
 
-      {/* Модалка захвата email */}
+      {/* Модалка email */}
       {emailModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
             <h3 className="text-xl font-bold text-gray-900 mb-2">Get your PDF Report</h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Enter your work email — the report will download instantly. No spam.
-            </p>
+            <p className="text-sm text-gray-500 mb-6">Enter your work email — the report will download instantly. No spam.</p>
             <input
               type="email"
               placeholder="your@company.com"
