@@ -28,25 +28,23 @@ const { data: substance } = await supabase
   .eq('cas_number', cas)
   .single()
 ---
-<Layout 
-  title={`${substance?.name || name} — GHS Hazard Information`}
-  description={`GHS/CLP hazard classification and H-statements for ${substance?.name || name}. CAS ${cas}.`}
+<Layout
+  title={`${substance?.iupac_name || name} — GHS Hazard Information`}
+  description={`GHS/CLP hazard classification and H-statements for ${substance?.iupac_name || name}. CAS ${cas}.`}
 >
   <div class="max-w-4xl mx-auto px-4 py-8">
 
     <h1 class="text-3xl font-bold text-gray-900 mb-2">
-      {substance?.name || name}
+      {substance?.iupac_name || name}
     </h1>
 
-    <p class="text-gray-500 mb-6">
-      CAS Number: <strong>{cas}</strong>
-    </p>
+    <p class="text-gray-500 mb-6">CAS Number: <strong>{cas}</strong></p>
 
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
       <h2 class="text-xl font-semibold mb-4">GHS Classification</h2>
 
       {substance?.signal_word && (
-        <div class="mb-3">
+        <div class="mb-4">
           <span class="font-medium">Signal Word:</span>
           <span class={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${
             substance.signal_word === 'Danger'
@@ -58,10 +56,42 @@ const { data: substance } = await supabase
         </div>
       )}
 
-      {substance?.h_statement_codes && (
-        <div class="mb-3">
-          <span class="font-medium">H-Statements:</span>
-          <p class="mt-1 text-gray-700">{substance.h_statement_codes}</p>
+      {substance?.ghs_pictogram_codes && substance.ghs_pictogram_codes.length > 0 && (
+        <div class="mb-4">
+          <span class="font-medium">Pictograms:</span>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            {substance.ghs_pictogram_codes.map((code: string) => (
+              <span class="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-mono">
+                {code}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {substance?.h_statement_codes && substance.h_statement_codes.length > 0 && (
+        <div class="mb-4">
+          <span class="font-medium">Hazard Statements:</span>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            {substance.h_statement_codes.map((code: string) => (
+              <span class="px-2 py-1 bg-red-50 border border-red-200 rounded text-sm font-mono text-red-700">
+                {code}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {substance?.p_statement_codes && substance.p_statement_codes.length > 0 && (
+        <div class="mb-4">
+          <span class="font-medium">Precautionary Statements:</span>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            {substance.p_statement_codes.map((code: string) => (
+              <span class="px-2 py-1 bg-green-50 border border-green-200 rounded text-sm font-mono text-green-700">
+                {code}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>
