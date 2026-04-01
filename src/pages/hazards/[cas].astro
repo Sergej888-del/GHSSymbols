@@ -4,12 +4,24 @@ import SubstancePage from '../../components/SubstancePage'
 import { supabase } from '../../lib/supabase'
 
 export async function getStaticPaths() {
-  const { data: substances } = await supabase
-    .from('substances')
-    .select('cas_number, iupac_name, common_name')
-    .not('cas_number', 'is', null)
+  let allSubstances: { cas_number: string; iupac_name: string; common_name: string | null }[] = []
+  let from = 0
+  const pageSize = 1000
 
-  return (substances || []).map((s) => ({
+  while (true) {
+    const { data } = await supabase
+      .from('substances')
+      .select('cas_number, iupac_name, common_name')
+      .not('cas_number', 'is', null)
+      .range(from, from + pageSize - 1)
+
+    if (!data || data.length === 0) break
+    allSubstances = [...allSubstances, ...data]
+    if (data.length < pageSize) break
+    from += pageSize
+  }
+
+  return allSubstances.map((s) => ({
     params: { cas: s.cas_number },
     props: { name: s.common_name || s.iupac_name }
   }))
