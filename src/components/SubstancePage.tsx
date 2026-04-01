@@ -122,7 +122,17 @@ export default function SubstancePage() {
       `<tr><td style="font-weight:600;font-family:monospace;white-space:nowrap">${h.code}</td><td>${h.text_en}</td></tr>`
     ).join('')
 
-    const picList = pictograms.map(p => p.name_en).join(', ')
+    const picItems = pictograms.map(p => `
+      <div style="display:inline-flex;flex-direction:column;align-items:center;gap:4px;width:80px;margin:4px">
+        <div style="width:72px;height:72px;border:2px solid #111;border-radius:4px;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden">
+          ${p.svg_content
+            ? `<div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center">${p.svg_content}</div>`
+            : `<span style="font-size:10px;font-weight:700;color:#555">${p.code}</span>`}
+        </div>
+        <span style="font-size:9px;text-align:center;color:#555;line-height:1.2">${p.name_en}</span>
+        <span style="font-size:9px;font-family:monospace;color:#999">${p.code}</span>
+      </div>`
+    ).join('')
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Safety Summary — ${name}</title>
@@ -141,15 +151,13 @@ export default function SubstancePage() {
         .prop { background: #f9f9f9; padding: 8px 10px; border-radius: 4px; }
         .prop-label { font-size: 10px; color: #888; margin-bottom: 2px; }
         .prop-value { font-weight: 600; }
-        .signal { display: inline-block; padding: 4px 16px; border-radius: 20px; font-weight: 700;
-                  font-size: 13px; margin-top: 4px;
-                  background: ${substance.signal_word === 'Danger' ? '#dc2626' : '#facc15'};
-                  color: ${substance.signal_word === 'Danger' ? '#fff' : '#111'}; }
+        .signal { display: inline-block; font-size: 14px; margin-top: 4px; }
         .svhc { background: #fef2f2; border: 1px solid #fecaca; padding: 10px 14px;
                 border-radius: 6px; color: #991b1b; font-size: 12px; margin-top: 8px; }
         .footer { margin-top: 32px; font-size: 10px; color: #aaa;
                   border-top: 1px solid #eee; padding-top: 10px; }
         @media print { body { margin: 20px; } }
+        svg { max-width: 100%; max-height: 100%; }
       </style></head><body>
 
       <h1>${substance.iupac_name}</h1>
@@ -160,9 +168,10 @@ export default function SubstancePage() {
         ${substance.un_number  ? `UN: ${substance.un_number} &nbsp;`   : ''}
         ${substance.molecular_formula ? `Formula: ${substance.molecular_formula}` : ''}
       </div>
-      ${substance.signal_word ? `<div class="signal">${substance.signal_word}</div>` : ''}
+      ${substance.signal_word ? `<div class="signal" style="${substance.signal_word === 'Danger' ? 'color:#cc0000;font-weight:bold' : 'color:#e65c00;font-weight:bold'}">${substance.signal_word}</div>` : ''}
 
-      ${pictograms.length > 0 ? `<h2>GHS Pictograms</h2><p style="font-size:12px">${picList}</p>` : ''}
+      ${pictograms.length > 0 ? `<h2>GHS Pictograms</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${picItems}</div>` : ''}
 
       ${hRows ? `<h2>Hazard Statements</h2>
         <table><thead><tr><th style="width:70px">Code</th><th>Statement</th></tr></thead>
