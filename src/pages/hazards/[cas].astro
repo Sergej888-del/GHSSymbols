@@ -1,0 +1,74 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { supabase } from '../../lib/supabase'
+
+export async function getStaticPaths() {
+  console.log('🔍 Загружаем вещества из Supabase...')
+  
+  const { data: substances, error } = await supabase
+    .from('substances')
+   .select('cas_number, iupac_name, common_name')
+    .not('cas_number', 'is', null)
+
+  console.log('📊 Результат:', substances?.length, 'веществ')
+  console.log('❌ Ошибка:', error)
+
+  return (substances || []).map((s) => ({
+    params: { cas: s.cas_number },
+ props: { name: s.common_name || s.iupac_name }   
+  }))
+}
+
+const { cas } = Astro.params
+const { name } = Astro.props
+
+const { data: substance } = await supabase
+  .from('substances')
+  .select('*')
+  .eq('cas_number', cas)
+  .single()
+---
+<Layout 
+  title={`${substance?.name || name} — GHS Hazard Information`}
+  description={`GHS/CLP hazard classification and H-statements for ${substance?.name || name}. CAS ${cas}.`}
+>
+  <div class="max-w-4xl mx-auto px-4 py-8">
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      {substance?.name || name}
+    </h1>
+
+    <p class="text-gray-500 mb-6">
+      CAS Number: <strong>{cas}</strong>
+    </p>
+
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">GHS Classification</h2>
+
+      {substance?.signal_word && (
+        <div class="mb-3">
+          <span class="font-medium">Signal Word:</span>
+          <span class={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${
+            substance.signal_word === 'Danger'
+              ? 'bg-red-100 text-red-800'
+              : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {substance.signal_word}
+          </span>
+        </div>
+      )}
+
+      {substance?.h_statement_codes && (
+        <div class="mb-3">
+          <span class="font-medium">H-Statements:</span>
+          <p class="mt-1 text-gray-700">{substance.h_statement_codes}</p>
+        </div>
+      )}
+    </div>
+
+    <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-500">
+      ⚠️ This information is for reference only. Always consult official SDS documentation.
+    </div>
+
+  </div>
+</Layout>
