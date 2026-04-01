@@ -1,0 +1,95 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { getCollection, render } from 'astro:content'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog')
+  return posts.map(post => ({
+    params: { slug: post.id },
+    props: { post },
+  }))
+}
+
+const { post } = Astro.props
+if (!post) return Astro.redirect('/blog')
+
+const { Content } = await render(post)
+---
+
+<Layout
+  title={post.data.title}
+  description={post.data.description}
+  canonical={`https://ghssymbols.com/blog/${post.id}`}
+>
+  <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+    <!-- Хлебные крошки -->
+    <nav class="text-sm text-gray-400 mb-8">
+      <a href="/" class="hover:text-gray-600">Home</a>
+      <span class="mx-2">›</span>
+      <a href="/blog" class="hover:text-gray-600">Blog</a>
+      <span class="mx-2">›</span>
+      <span class="text-gray-600">{post.data.title}</span>
+    </nav>
+
+    <!-- Теги -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      {post.data.tags.map((tag: string) => (
+        <span class="text-xs font-medium px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">
+          {tag}
+        </span>
+      ))}
+    </div>
+
+    <!-- Заголовок -->
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">{post.data.title}</h1>
+
+    <!-- Мета -->
+    <div class="flex items-center gap-3 text-sm text-gray-400 mb-12 pb-8 border-b border-gray-100">
+      <span>{post.data.author}</span>
+      <span>·</span>
+      <time datetime={post.data.pubDate.toISOString()}>
+        {post.data.pubDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+      </time>
+      {post.data.updatedDate && (
+        <>
+          <span>·</span>
+          <span>
+            Updated {post.data.updatedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </span>
+        </>
+      )}
+    </div>
+
+    <!-- Контент статьи -->
+    <div class="prose prose-gray max-w-none
+      prose-headings:font-bold prose-headings:text-gray-900
+      prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
+      prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+      prose-p:text-gray-700 prose-p:leading-relaxed
+      prose-a:text-blue-700 prose-a:no-underline hover:prose-a:underline
+      prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-gray-800
+      prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl
+      prose-table:text-sm prose-th:bg-gray-50 prose-th:font-semibold
+      prose-td:align-top
+      prose-strong:text-gray-900
+      prose-li:text-gray-700
+    ">
+      <Content />
+    </div>
+
+    <!-- Нижняя навигация -->
+    <div class="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-start">
+      <a href="/blog" class="text-sm text-gray-500 hover:text-blue-700">← All articles</a>
+      <div class="flex gap-3">
+        <a href="/tools/ate-calculator" class="text-sm font-medium text-orange-600 hover:text-orange-700">
+          ATE Calculator →
+        </a>
+        <a href="/hazards" class="text-sm font-medium text-blue-700 hover:text-blue-800">
+          Hazards DB →
+        </a>
+      </div>
+    </div>
+
+  </article>
+</Layout>

@@ -1,0 +1,85 @@
+---
+title: "How to Calculate ATE for Chemical Mixtures (GHS Formula)"
+description: "Step-by-step guide to calculating Acute Toxicity Estimate (ATE) for chemical mixtures using the GHS additivity formula. Includes worked examples."
+pubDate: 2026-04-01
+author: "GHS Symbols Team"
+tags: ["ate", "mixture", "toxicity", "calculation", "sds"]
+---
+
+When formulating a chemical mixture, you need to determine its acute toxicity classification to label it correctly under GHS/CLP. This is done using the **ATE (Acute Toxicity Estimate) additivity formula**.
+
+## The GHS ATE Formula
+
+```
+100 / ATE_mix = Σ (Ci / ATE_i)
+```
+
+Where:
+- **ATE_mix** — the calculated ATE for the mixture (mg/kg or mg/L)
+- **Ci** — concentration of component *i* in % by weight
+- **ATE_i** — ATE value of component *i*
+
+This formula is applied separately for each route of exposure: oral, dermal, and inhalation.
+
+## Which Components to Include
+
+Only components with **concentration ≥ 1%** are included in the calculation.
+
+However, components present at **< 1%** must still be included if their individual ATE would affect the mixture classification (e.g., highly toxic substances at 0.5%).
+
+## ATE Default Values
+
+When an exact LD50 is not available, GHS provides default ATE values by toxicity category:
+
+| Category | Oral (mg/kg) | Dermal (mg/kg) | Inhalation vapour (mg/L/4h) |
+|----------|-------------|----------------|----------------------------|
+| 1        | 0.5         | 50             | 0.05                       |
+| 2        | 5           | 200            | 0.5                        |
+| 3        | 100         | 1000           | 3                          |
+| 4        | 500         | 2000           | 11                         |
+
+## Worked Example
+
+**Mixture: Industrial Degreaser**
+
+| Component         | Concentration | Oral ATE (mg/kg) |
+|-------------------|--------------|-----------------|
+| n-Hexane          | 60%          | 25,000          |
+| Acetone           | 30%          | 5,800           |
+| Toluene           | 10%          | 636             |
+
+**Calculation:**
+
+```
+100 / ATE_mix = (60/25000) + (30/5800) + (10/636)
+100 / ATE_mix = 0.0024 + 0.00517 + 0.01572
+100 / ATE_mix = 0.02329
+ATE_mix = 100 / 0.02329 = 4,294 mg/kg
+```
+
+**Result:** ATE_mix = 4,294 mg/kg → **Category 5 / Not classified** (threshold for Cat 4 is < 2,000 mg/kg)
+
+## Classification Thresholds
+
+| ATE Range (oral, mg/kg) | Category | Signal Word | Pictogram |
+|------------------------|----------|-------------|-----------|
+| ≤ 5                    | 1        | DANGER      | GHS06     |
+| > 5 – ≤ 50             | 2        | DANGER      | GHS06     |
+| > 50 – ≤ 300           | 3        | DANGER      | GHS06     |
+| > 300 – ≤ 2,000        | 4        | WARNING     | GHS07     |
+| > 2,000 – ≤ 5,000      | 5        | WARNING     | —         |
+
+## Use the Calculator
+
+Instead of doing this by hand, use our [ATE Mixture Calculator](/tools/ate-calculator):
+
+1. Search for each component by name or CAS number
+2. Set the concentration percentage
+3. Click **Calculate** to get the mixture ATE and classification
+4. Download a PDF report for your SDS documentation
+
+The calculator uses ATE values from the ECHA CLP Annex VI database and applies the GHS additivity formula automatically.
+
+---
+
+*Reference: UN GHS Rev.9, Chapter 3.1 — Acute Toxicity. CLP Regulation (EC) No 1272/2008, Annex I.*
