@@ -334,3 +334,63 @@ PubChem API:          pubchem.ncbi.nlm.nih.gov/docs/pug-rest
 
 *Этот файл обновляется по мере развития проекта.*
 *Последнее обновление: Апрель 2026*
+
+---
+
+## Текущий статус проекта (обновлено 02.04.2026)
+
+✅ Стратегический план создан (Master Plan)
+✅ Claude Project настроен
+✅ Cursor Pro установлен
+✅ GitHub подключён (Sergej888-del)
+✅ Supabase проект создан
+✅ Схема БД задеплоена
+✅ Данные импортированы (~3814 веществ CLP Annex VI)
+✅ ghssymbols.com — задеплоен на Cloudflare Pages
+✅ ghssymbols.com — pSEO страницы /hazards/[cas]/ (3814 страниц)
+✅ ghssymbols.com — Blog (/blog/) и FAQ (/faq/) работают
+✅ ghssymbols.com — PDF download форма работает
+✅ ghssymbols.com — Brevo интеграция работает
+✅ ghssymbols.com — leads сохраняются в Supabase
+✅ ghssymbols.com — Cloudflare Functions (/functions/api/leads.ts)
+✅ ghssymbols.com — GA4 подключён (G-1Y5MKV5XMK)
+✅ ghssymbols.com — favicon красный (#C0392B)
+✅ ghspictograms.com — создан, задеплоен на Cloudflare Pages
+✅ ghspictograms.com — домен подключён
+✅ ghspictograms.com — Supabase подключён
+✅ ghspictograms.com — навигация экосистемы в header
+✅ ghspictograms.com — pSEO страницы /pictograms/[cas]/ (3814 страниц)
+✅ ghspictograms.com — GHS Label Tool (Label Preview, PDF, CTA)
+✅ ghspictograms.com — секция Label Requirements (CLP, BS5609, OSHA)
+✅ ghspictograms.com — JSON-LD Product разметка
+✅ ghspictograms.com — favicon синий (#0D2B6B)
+⬜ ghspictograms.com — GA4 новое свойство
+⬜ ghspictograms.com — Google Search Console
+⬜ ghspictograms.com — навигация в ghssymbols.com header
+⬜ ghspictograms.com — микроразметка ChemicalSubstance + FAQPage
+⬜ ghspictograms.com — Конструктор этикеток GHS (Инструмент 3)
+⬜ ghspictograms.com — Инспектор GHS vs ADR/DOT (Инструмент 4)
+⬜ ghssymbols.com — ATE Calculator (Инструмент 1)
+⬜ ghssymbols.com — Storage Compatibility Matrix (Инструмент 2)
+⬜ ghslabels.com — Next.js проект создан
+⬜ ghslabels.com — RFQ форма
+
+---
+
+## Важно: Cloudflare Pages архитектура
+
+### ghssymbols.com
+- output: 'static' в astro.config.mjs (НЕ hybrid)
+- Build output directory: dist/client
+- API routes → /functions/api/leads.ts (Cloudflare Pages Function)
+
+### ghspictograms.com
+- output: 'static' в astro.config.mjs (НЕ hybrid)
+- Build output directory: dist/client
+- Пока нет API routes
+
+---
+
+*Последнее обновление: 02.04.2026*
+
+---
