@@ -1,9 +1,8 @@
 export const prerender = false;
-import type { APIRoute } from 'astro'
+
+import type { APIContext } from 'astro'
 import { createClient } from '@supabase/supabase-js'
 import { brevoListIdForEmailType, classifyEmailDomain } from '../../lib/emailClassification'
-
-
 
 const BREVO_URL = 'https://api.brevo.com/v3/contacts'
 
@@ -20,7 +19,8 @@ function json(data: unknown, status = 200) {
   })
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST = async (context: APIContext) => {
+  const { request } = context
   const brevoKey = import.meta.env.BREVO_API_KEY
   const serviceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY
   const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL
