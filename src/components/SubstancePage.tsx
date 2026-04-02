@@ -1,6 +1,7 @@
 // Клиентский компонент страницы вещества
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { submitLeadCapture } from '../lib/submitLeadCapture'
 
 interface Pictogram {
   code: string
@@ -110,12 +111,23 @@ export default function SubstancePage({ initialCas }: Props = {}) {
     if (!email.includes('@')) { setEmailError('Enter a valid email address'); return }
     setSubmitting(true)
     setEmailError('')
-    await supabase.from('leads').insert({
-      email,
-      source_tool: 'safety_summary',
-      source_domain: 'ghssymbols.com',
-      email_consent: true,
-    })
+    try {
+      const result = await submitLeadCapture({
+        email,
+        source_tool: 'safety_summary',
+        source_domain: 'ghssymbols.com',
+        email_consent: true,
+      })
+      if (!result.ok) {
+        setEmailError(result.error)
+        setSubmitting(false)
+        return
+      }
+    } catch {
+      setEmailError('Network error. Try again.')
+      setSubmitting(false)
+      return
+    }
     setSubmitting(false)
     setEmailModal(false)
     setEmail('')

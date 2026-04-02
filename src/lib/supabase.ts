@@ -109,4 +109,6 @@ export interface Lead {
   substance_name: string | null
   mixture_id: string | null
   email_consent: boolean
+  email_type?: string | null
+  brevo_contact_id?: string | null
 }

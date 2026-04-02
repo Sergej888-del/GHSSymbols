@@ -1,6 +1,7 @@
 // Калькулятор ATE смесей (Инструмент 1)
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { submitLeadCapture } from '../../lib/submitLeadCapture'
 import type { Substance, MixtureComponent } from '../../lib/supabase'
 
 const ATE_CATEGORIES = {
@@ -258,12 +259,23 @@ export default function ATECalculator() {
     if (!email.includes('@')) { setEmailError('Enter a valid email address'); return }
     setSubmitting(true)
     setEmailError('')
-    await supabase.from('leads').insert({
-      email,
-      source_tool: 'ate_calculator',
-      source_domain: 'ghssymbols.com',
-      email_consent: true,
-    })
+    try {
+      const result = await submitLeadCapture({
+        email,
+        source_tool: 'ate_calculator',
+        source_domain: 'ghssymbols.com',
+        email_consent: true,
+      })
+      if (!result.ok) {
+        setEmailError(result.error)
+        setSubmitting(false)
+        return
+      }
+    } catch {
+      setEmailError('Network error. Try again.')
+      setSubmitting(false)
+      return
+    }
     setSubmitting(false)
     setEmailModal(false)
     setEmail('')
@@ -323,9 +335,10 @@ export default function ATECalculator() {
         .cat-warning { background:#fef9c3; color:#92400e; }
         .signal { display:inline-block; margin:12px 0; padding:6px 20px; border-radius:20px; font-weight:bold; font-size:15px;
                   background:${result.signal_word === 'DANGER' ? '#dc2626' : result.signal_word === 'WARNING' ? '#facc15' : '#e5e7eb'};
-                  color:${result.signal_word === 'DANGER' ? '#fff' : '#111'}; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                  color:${result.signal_word === 'DANGER' ? '#fff' : '#111'}; }
+                  -webkit-print-color-adjust: exact; print-color-adjust: exact;
         .formula { margin-top:28px; font-size:11px; color:#888; border-top:1px solid #eee; padding-top:12px; }
-        @media print { body { margin: 20px; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+        @media print { body { margin: 20px; } }
         svg { max-width:100%; max-height:100%; }
       </style></head><body>
 
