@@ -57,6 +57,8 @@ const canonicalUrl = canonical ?? `${siteUrl}${Astro.url.pathname}`
         <a href="/" class="flex items-center gap-2 font-bold text-xl text-white">
           GHS Symbols
         </a>
+
+        <!-- Десктоп меню -->
         <ul class="hidden md:flex items-center gap-6 text-sm font-medium text-blue-200">
           <li><a href="/tools/ate-calculator" class="hover:text-white transition-colors">ATE Calculator</a></li>
           <li><a href="/tools/storage-matrix" class="hover:text-white transition-colors">Storage Matrix</a></li>
@@ -64,6 +66,22 @@ const canonicalUrl = canonical ?? `${siteUrl}${Astro.url.pathname}`
           <li><a href="/blog" class="hover:text-white transition-colors">Blog</a></li>
           <li><a href="/faq" class="hover:text-white transition-colors">FAQ</a></li>
         </ul>
+
+        <!-- Бургер-меню для мобильных -->
+        <details class="md:hidden relative">
+          <summary class="list-none cursor-pointer p-2 text-blue-200 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </summary>
+          <ul class="absolute right-0 top-full mt-1 w-52 bg-[#062A78] border border-blue-700 rounded-xl shadow-xl py-2 text-sm font-medium text-blue-200">
+            <li><a href="/tools/ate-calculator" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">ATE Calculator</a></li>
+            <li><a href="/tools/storage-matrix" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Storage Matrix</a></li>
+            <li><a href="/hazards" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Hazards DB</a></li>
+            <li><a href="/blog" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Blog</a></li>
+            <li><a href="/faq" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">FAQ</a></li>
+          </ul>
+        </details>
       </nav>
     </header>
 
