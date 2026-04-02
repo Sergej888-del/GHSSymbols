@@ -1,10 +1,20 @@
-export const prerender = false;
-
-import type { APIContext } from 'astro'
+/**
+ * Cloudflare Pages Function — POST /api/leads
+ * (логика перенесена из Astro; env из Cloudflare Pages → Settings → Variables)
+ */
 import { createClient } from '@supabase/supabase-js'
-import { brevoListIdForEmailType, classifyEmailDomain } from '../../lib/emailClassification'
+import { brevoListIdForEmailType, classifyEmailDomain } from '../../src/lib/emailClassification'
 
 const BREVO_URL = 'https://api.brevo.com/v3/contacts'
+
+/** Секреты и переменные Pages (имена как в Dashboard) */
+interface LeadsEnv {
+  BREVO_API_KEY?: string
+  SUPABASE_SERVICE_ROLE_KEY?: string
+  PUBLIC_SUPABASE_URL?: string
+  BREVO_LIST_PERSONAL?: string
+  BREVO_LIST_BUSINESS?: string
+}
 
 function parseEnvPositiveInt(raw: string | undefined, fallback: number): number {
   if (raw == null || String(raw).trim() === '') return fallback
@@ -19,11 +29,11 @@ function json(data: unknown, status = 200) {
   })
 }
 
-export const POST = async (context: APIContext) => {
-  const { request } = context
-  const brevoKey = import.meta.env.BREVO_API_KEY
-  const serviceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY
-  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL
+export async function onRequestPost(context: { request: Request; env: LeadsEnv }) {
+  const { request, env } = context
+  const brevoKey = env.BREVO_API_KEY
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrl = env.PUBLIC_SUPABASE_URL
 
   if (!brevoKey || !serviceKey || !supabaseUrl) {
     return json(
@@ -50,8 +60,8 @@ export const POST = async (context: APIContext) => {
 
   const email_type = classifyEmailDomain(email)
   const listIds = {
-    personal: parseEnvPositiveInt(import.meta.env.BREVO_LIST_PERSONAL, 2),
-    business: parseEnvPositiveInt(import.meta.env.BREVO_LIST_BUSINESS, 3),
+    personal: parseEnvPositiveInt(env.BREVO_LIST_PERSONAL, 2),
+    business: parseEnvPositiveInt(env.BREVO_LIST_BUSINESS, 3),
   }
   const listId = brevoListIdForEmailType(email_type, listIds)
 
