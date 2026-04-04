@@ -307,7 +307,7 @@ export default function HazardsDatabase() {
             {visibleRows.map((s) => (
               <li key={s.id}>
                 <a
-                  href={`/hazards/view?cas=${encodeURIComponent(s.cas_number ?? '')}&id=${s.id}`}
+                  href={`/hazards/${encodeURIComponent(s.cas_number ?? '')}/`}
                   className="flex flex-wrap items-center gap-3 py-4 px-1 sm:px-0 hover:text-orange-600 transition-colors group"
                 >
                   <div className="flex-1 min-w-[12rem]">

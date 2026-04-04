@@ -9,6 +9,8 @@ import cloudflare from '@astrojs/cloudflare';
 export default defineConfig({
   site: 'https://ghssymbols.com',
   output: 'static',
+  // Временно: обход EPERM на dist/ при запущенном preview (убрать после отладки)
+  build: { outDir: 'dist-tmp-debug' },
   adapter: cloudflare(),
 
   integrations: [react(), mdx(), sitemap()],
