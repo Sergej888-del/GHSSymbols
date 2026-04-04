@@ -82,6 +82,15 @@ export default function SubstancePage({ initialCas }: Props = {}) {
 
       if (!sub) { setNotFound(true); setLoading(false); return }
       setSubstance(sub as SubstanceData)
+      {
+        const s = sub as unknown as SubstanceData
+        console.log('substance data:', {
+          molecular_weight: s.molecular_weight,
+          flash_point: s.flash_point,
+          boiling_point: s.boiling_point,
+          ate_oral: s.ate_oral,
+        })
+      }
 
       const picCodes = (sub as SubstanceData).ghs_pictogram_codes ?? []
       const hCodes   = (sub as SubstanceData).h_statement_codes   ?? []

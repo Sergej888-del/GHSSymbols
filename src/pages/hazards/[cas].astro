@@ -3,32 +3,118 @@ import Layout from '../../layouts/Layout.astro'
 import SubstancePage from '../../components/SubstancePage'
 import { supabase } from '../../lib/supabase'
 
+type SubstancePathRow = {
+  cas_number: string
+  iupac_name: string
+  common_name: string | null
+  h_statement_codes: string[] | null
+  ghs_pictogram_codes: string[] | null
+  signal_word: string | null
+  flash_point: number | null
+}
+
 export async function getStaticPaths() {
-  let allSubstances: { cas_number: string; iupac_name: string; common_name: string | null }[] = []
+  let allSubstances: SubstancePathRow[] = []
   let from = 0
   const pageSize = 1000
 
   while (true) {
     const { data } = await supabase
       .from('substances')
-      .select('cas_number, iupac_name, common_name')
+      .select('cas_number, iupac_name, common_name, h_statement_codes, ghs_pictogram_codes, signal_word, flash_point')
       .not('cas_number', 'is', null)
       .range(from, from + pageSize - 1)
 
     if (!data || data.length === 0) break
-    allSubstances = [...allSubstances, ...data]
+    allSubstances = [...allSubstances, ...(data as SubstancePathRow[])]
     if (data.length < pageSize) break
     from += pageSize
   }
 
   return allSubstances.map((s) => ({
     params: { cas: s.cas_number },
-    props: { name: s.common_name || s.iupac_name }
+    props: {
+      name: s.common_name || s.iupac_name,
+      hCodes: (s.h_statement_codes ?? []) as string[],
+      picCodes: (s.ghs_pictogram_codes ?? []) as string[],
+      signalWord: (s.signal_word ?? '') as string,
+      flashPoint: s.flash_point as number | null,
+    },
   }))
 }
 
 const { cas } = Astro.params
-const { name } = Astro.props
+const { name, hCodes, picCodes, signalWord, flashPoint } = Astro.props
+
+function buildSeoBlocks(
+  hCodes: string[],
+  picCodes: string[],
+  signalWord: string,
+  flashPoint: number | null,
+  name: string
+): string[] {
+  const blocks: string[] = []
+
+  // Физические опасности
+  if (picCodes.includes('GHS01') || hCodes.some(h => h.startsWith('H2') && ['H200','H201','H202','H203','H204','H205'].includes(h))) {
+    blocks.push(`${name} is classified as explosive. Storage must comply with national explosives regulations — only in approved explosive storage magazines, away from all ignition sources, heat, and friction. Quantities must be minimised and access restricted to authorised personnel only.`)
+  }
+
+  if (picCodes.includes('GHS02') || (flashPoint !== null && flashPoint < 60)) {
+    const fpClass = flashPoint !== null && flashPoint < 23
+      ? 'a highly flammable liquid (flash point below 23 °C, Category 1–2)'
+      : 'a flammable liquid (flash point below 60 °C, Category 3)'
+    blocks.push(`${name} is ${fpClass}. Store in a dedicated flammable storage cabinet, away from oxidisers and ignition sources. Use explosion-proof electrical equipment in storage areas. Containers must be kept tightly closed and grounded during transfer to prevent static discharge.`)
+  }
+
+  if (picCodes.includes('GHS03') || hCodes.some(h => ['H270','H271','H272'].includes(h))) {
+    blocks.push(`${name} is an oxidising substance and must be stored separately from flammable and combustible materials, organic substances, and reducing agents. Oxidiser storage areas require dedicated ventilation and must be kept cool and dry.`)
+  }
+
+  if (picCodes.includes('GHS04') || hCodes.some(h => ['H280','H281'].includes(h))) {
+    blocks.push(`${name} is stored and transported as a compressed gas. Cylinders must be secured upright, protected from physical damage, and stored away from heat sources. Ensure adequate ventilation to prevent accumulation of gas in confined spaces.`)
+  }
+
+  // Коррозия
+  if (picCodes.includes('GHS05') || hCodes.some(h => ['H290','H314','H318'].includes(h))) {
+    blocks.push(`${name} is corrosive to skin, eyes, or metals. Store in acid-resistant or alkali-resistant cabinets as appropriate. Do not store in metal containers. Secondary containment (drip trays) is required. Segregate from incompatible substances such as strong oxidisers.`)
+  }
+
+  // Острая токсичность — высокая
+  if (picCodes.includes('GHS06') || hCodes.some(h => ['H300','H301','H310','H311','H330','H331'].includes(h))) {
+    blocks.push(`${name} has acute toxicity (oral, dermal, or inhalation) classified as Category 1–3. Access to this substance must be restricted to trained personnel. Store in a locked, well-ventilated area. Exposure monitoring and medical surveillance may be required under OSHA 29 CFR 1910.1000 or equivalent regulations.`)
+  }
+
+  // GHS07 — умеренная токсичность
+  if (picCodes.includes('GHS07') && !picCodes.includes('GHS06')) {
+    blocks.push(`${name} may cause irritation to skin, eyes, or respiratory tract, or has low-level systemic toxicity. Adequate ventilation must be provided in work areas. Personal protective equipment (gloves, eye protection) is recommended during handling.`)
+  }
+
+  // Серьёзная опасность здоровью
+  if (picCodes.includes('GHS08') || hCodes.some(h => ['H340','H341','H350','H351','H360','H361','H372','H373'].includes(h))) {
+    const flags: string[] = []
+    if (hCodes.some(h => ['H340','H341'].includes(h))) flags.push('mutagenic')
+    if (hCodes.some(h => ['H350','H351'].includes(h))) flags.push('potentially carcinogenic')
+    if (hCodes.some(h => ['H360','H361'].includes(h))) flags.push('toxic to reproduction')
+    if (hCodes.some(h => ['H372','H373'].includes(h))) flags.push('a specific target organ toxicant (STOT)')
+    const flagText = flags.length > 0 ? flags.join(', ') : 'a serious long-term health hazard'
+    blocks.push(`${name} is classified as ${flagText}. Exposure must be minimised using engineering controls (local exhaust ventilation, closed systems). Biological and medical monitoring may be required. Refer to the full Safety Data Sheet (SDS) Section 8 for occupational exposure limits.`)
+  }
+
+  // Водная токсичность
+  if (picCodes.includes('GHS09') || hCodes.some(h => h.startsWith('H4'))) {
+    blocks.push(`${name} is hazardous to the aquatic environment. Do not allow this substance to enter drains, waterways, or soil. Spills must be contained immediately using appropriate absorbent material. Disposal must comply with local environmental regulations — consult the SDS Section 13 for guidance on waste treatment.`)
+  }
+
+  // Danger vs Warning
+  if (signalWord === 'Danger') {
+    blocks.push(`This substance carries the signal word DANGER, indicating the more severe hazard categories under GHS/CLP. Facilities handling ${name} should ensure a written hazard communication programme, including current SDS, employee training records, and GHS-compliant labelling on all containers.`)
+  }
+
+  return blocks
+}
+
+const seoBlocks = buildSeoBlocks(hCodes, picCodes, signalWord, flashPoint, name)
 ---
 
 <Layout
@@ -37,4 +123,22 @@ const { name } = Astro.props
   canonical={`https://ghssymbols.com/hazards/${cas}`}
 >
   <SubstancePage client:load initialCas={cas} />
+
+  {seoBlocks.length > 0 && (
+    <section class="max-w-4xl mx-auto px-4 pb-12 mt-8">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">
+        Handling and Storage Guidance for {name}
+      </h2>
+      <div class="space-y-4">
+        {seoBlocks.map((block) => (
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <p class="text-gray-700 text-sm leading-relaxed">{block}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mt-4 text-xs text-gray-400">
+        This information is provided for reference only. Always consult the official Safety Data Sheet (SDS) and applicable national regulations before handling this substance.
+      </p>
+    </section>
+  )}
 </Layout>
