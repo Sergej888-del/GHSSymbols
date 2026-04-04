@@ -1,0 +1,184 @@
+---
+/**
+ * Тёмная оболочка (как index.astro): фон, сетка, шрифты, nav.
+ */
+interface Props {
+  title: string
+  description: string
+  canonical: string
+  ogTitle?: string
+}
+
+const { title, description, canonical, ogTitle = title } = Astro.props
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1Y5MKV5XMK"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      gtag('js', new Date())
+      gtag('config', 'G-1Y5MKV5XMK')
+    </script>
+    <style is:global>
+      :root {
+        --bg: #0c0c0e;
+        --surface: #141418;
+        --border: #222228;
+        --accent: #f4a261;
+        --text: #e8e8e8;
+        --muted: #666672;
+        --font-display: 'Bebas Neue', sans-serif;
+        --font-body: 'DM Sans', sans-serif;
+        --font-mono: 'DM Mono', monospace;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      body a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+        background-size: 48px 48px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .dark-site-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(12, 12, 14, 0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .dark-site-nav .nav-logo {
+        font-family: var(--font-display);
+        font-size: 1.4rem;
+        letter-spacing: 0.05em;
+        color: var(--text);
+      }
+
+      .dark-site-nav .nav-logo span {
+        color: var(--accent);
+      }
+
+      .dark-site-nav .nav-links {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .dark-site-nav .nav-links a {
+        font-size: 0.875rem;
+        color: var(--muted);
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .dark-site-nav .nav-links a:hover {
+        color: var(--text);
+      }
+
+      .dark-site-nav .nav-links a.nav-external {
+        color: var(--accent);
+      }
+
+      .dark-site-nav .nav-links a.nav-external:hover {
+        color: #ffc078;
+      }
+
+      .dark-site-main {
+        position: relative;
+        z-index: 1;
+        min-height: calc(100vh - 60px);
+      }
+
+      .font-display {
+        font-family: var(--font-display);
+      }
+
+      @media (max-width: 600px) {
+        .dark-site-nav .nav-links {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="dark-site-nav" aria-label="Main">
+      <a href="/" class="nav-logo">GHS<span>Symbols</span>.com</a>
+      <ul class="nav-links">
+        <li><a href="/tools/ate-calculator">ATE Calculator</a></li>
+        <li><a href="/hazards">Hazards DB</a></li>
+        <li><a href="/tools/storage-matrix">Storage Matrix</a></li>
+        <li>
+          <a
+            href="https://ghspictograms.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="nav-external">GHS Pictograms ↗</a>
+        </li>
+      </ul>
+    </nav>
+    <main class="dark-site-main">
+      <slot />
+    </main>
+  </body>
+</html>
