@@ -14,7 +14,11 @@ export async function getStaticPaths() {
 const rawCode = Astro.params.code ?? ''
 const code = decodeURIComponent(rawCode)
 
-const { data: row } = await supabase.from('p_statements').select('*').eq('code', code).maybeSingle()
+const { data: row } = await supabase
+  .from('p_statements')
+  .select('code, category, text_en, ghs_revision')
+  .eq('code', code)
+  .maybeSingle()
 
 if (!row) {
   return Astro.redirect('/p-statements/')
@@ -24,9 +28,6 @@ const p = row as {
   code: string
   category: string
   text_en: string
-  text_ru: string | null
-  text_lv: string | null
-  text_de: string | null
   ghs_revision: number | null
 }
 
@@ -94,18 +95,6 @@ const definedTermJson = JSON.stringify({
       <div>
         <p class="font-semibold text-gray-700 mb-1">Full text (EN)</p>
         <p class="text-gray-900 leading-relaxed">{p.text_en}</p>
-      </div>
-      <div>
-        <p class="font-semibold text-gray-700 mb-1">Latvian</p>
-        <p class="text-gray-800 leading-relaxed">{p.text_lv ?? '—'}</p>
-      </div>
-      <div>
-        <p class="font-semibold text-gray-700 mb-1">Russian</p>
-        <p class="text-gray-800 leading-relaxed">{p.text_ru ?? '—'}</p>
-      </div>
-      <div>
-        <p class="font-semibold text-gray-700 mb-1">German</p>
-        <p class="text-gray-800 leading-relaxed">{p.text_de ?? '—'}</p>
       </div>
     </div>
 
