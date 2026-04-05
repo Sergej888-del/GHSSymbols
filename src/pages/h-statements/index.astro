@@ -1,0 +1,146 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { supabase } from '../../lib/supabase'
+
+const siteUrl = 'https://ghssymbols.com'
+const title = 'GHS H-Statements Complete Reference (H200–H420)'
+const description =
+  'Complete list of all GHS hazard statements (H-statements) H200 to H420. Click any code for detailed explanation and list of substances.'
+const canonical = `${siteUrl}/h-statements/`
+
+const { data: hRows } = await supabase
+  .from('h_statements')
+  .select('code, category, text_en')
+  .order('code', { ascending: true })
+
+const statements = (hRows ?? []) as { code: string; category: string; text_en: string }[]
+
+/** Подсчёт веществ по каждому коду H (пагинация по всей таблице) */
+const hCounts = new Map<string, number>()
+let hFrom = 0
+const pageSize = 1000
+while (true) {
+  const { data: chunk } = await supabase
+    .from('substances')
+    .select('h_statement_codes')
+    .not('cas_number', 'is', null)
+    .range(hFrom, hFrom + pageSize - 1)
+  if (!chunk?.length) break
+  for (const row of chunk) {
+    for (const c of (row.h_statement_codes ?? []) as string[]) {
+      hCounts.set(c, (hCounts.get(c) ?? 0) + 1)
+    }
+  }
+  if (chunk.length < pageSize) break
+  hFrom += pageSize
+}
+
+function hBucket(code: string): 'physical' | 'health' | 'environmental' | 'other' {
+  const m = /^H(\d+)$/.exec(code)
+  if (!m) return 'other'
+  const n = parseInt(m[1], 10)
+  if (n >= 200 && n <= 290) return 'physical'
+  if (n >= 300 && n <= 373) return 'health'
+  if (n >= 400 && n <= 420) return 'environmental'
+  return 'other'
+}
+
+const physical = statements.filter((s) => hBucket(s.code) === 'physical')
+const health = statements.filter((s) => hBucket(s.code) === 'health')
+const environmental = statements.filter((s) => hBucket(s.code) === 'environmental')
+const other = statements.filter((s) => hBucket(s.code) === 'other')
+
+const sections: { id: string; title: string; rows: typeof statements }[] = [
+  { id: 'physical', title: 'Physical Hazards (H200–H290)', rows: physical },
+  { id: 'health', title: 'Health Hazards (H300–H373)', rows: health },
+  { id: 'environmental', title: 'Environmental Hazards (H400–H420)', rows: environmental },
+]
+
+if (other.length > 0) {
+  sections.push({ id: 'other', title: 'EUH & other supplemental codes', rows: other })
+}
+
+const itemListJson = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'GHS Hazard Statements (H-statements)',
+  numberOfItems: statements.length,
+  itemListElement: statements.map((s, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: s.code,
+    url: `${siteUrl}/h-statements/${encodeURIComponent(s.code)}/`,
+  })),
+})
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <script type="application/ld+json" slot="head" set:html={itemListJson} />
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <nav class="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="text-[#062A78] hover:underline">Home</a>
+      <span class="mx-2">→</span>
+      <span class="text-gray-700">H-Statements</span>
+    </nav>
+
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight" style="font-family: 'Space Grotesk', system-ui, sans-serif">
+      GHS Hazard Statements (H-Statements) — Complete Reference
+    </h1>
+
+    <p class="mt-6 text-gray-700 leading-relaxed text-lg">
+      Hazard statements (H-phrases) describe the nature and severity of chemical hazards under the Globally Harmonized System of Classification and Labelling of Chemicals (GHS)
+      and the EU CLP Regulation. They appear on labels and safety data sheets together with pictograms, signal words, and precautionary (P) statements. Each code from H200 through H420
+      (plus EUH codes where applicable) links to a fixed wording in all official EU languages. Use this directory to look up definitions, compare languages, and see which harmonised
+      substances in our CLP Annex VI database carry each statement. Always confirm classification against your supplier SDS.
+    </p>
+
+    <p class="mt-4">
+      <a href="/hazards/" class="text-[#062A78] font-semibold hover:underline">Browse substances in the GHS Hazard Database →</a>
+    </p>
+
+    {
+      sections.map((sec) => (
+        <section class="mt-12" id={sec.id}>
+          <h2 class="text-2xl font-bold text-gray-900 mb-4" style="font-family: 'Space Grotesk', system-ui, sans-serif">
+            {sec.title}
+          </h2>
+          <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+            <table class="min-w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-gray-100 text-left text-gray-800">
+                  <th class="px-4 py-3 font-semibold border-b border-gray-200">Код</th>
+                  <th class="px-4 py-3 font-semibold border-b border-gray-200">Описание</th>
+                  <th class="px-4 py-3 font-semibold border-b border-gray-200 whitespace-nowrap">Число веществ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sec.rows.map((row) => {
+                  const n = hCounts.get(row.code) ?? 0
+                  return (
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 align-top whitespace-nowrap">
+                        <a
+                          href={`/h-statements/${encodeURIComponent(row.code)}/`}
+                          class="text-blue-700 font-mono font-bold hover:underline"
+                        >
+                          {row.code}
+                        </a>
+                      </td>
+                      <td class="px-4 py-3 text-gray-800 align-top">{row.text_en}</td>
+                      <td class="px-4 py-3 text-gray-500 align-top whitespace-nowrap">{n > 0 ? String(n) : '—'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))
+    }
+
+    <p class="mt-10 text-sm text-gray-500">
+      Precautionary (P) statements: <a href="/p-statements/" class="text-[#062A78] font-medium hover:underline">GHS P-Statements reference →</a>
+    </p>
+  </div>
+</Layout>

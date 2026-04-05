@@ -1,0 +1,155 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { supabase } from '../../lib/supabase'
+
+const siteUrl = 'https://ghssymbols.com'
+const title = 'GHS P-Statements Complete Reference (P100–P502)'
+const description =
+  'Complete list of GHS precautionary statements (P-statements): general, prevention, response, storage, and disposal. Click any code for wording and example substances.'
+const canonical = `${siteUrl}/p-statements/`
+
+const { data: pRows } = await supabase
+  .from('p_statements')
+  .select('code, category, text_en')
+  .order('code', { ascending: true })
+
+const statements = (pRows ?? []) as { code: string; category: string; text_en: string }[]
+
+const pCounts = new Map<string, number>()
+let pFrom = 0
+const pageSize = 1000
+while (true) {
+  const { data: chunk } = await supabase
+    .from('substances')
+    .select('p_statement_codes')
+    .not('cas_number', 'is', null)
+    .range(pFrom, pFrom + pageSize - 1)
+  if (!chunk?.length) break
+  for (const row of chunk) {
+    for (const c of (row.p_statement_codes ?? []) as string[]) {
+      pCounts.set(c, (pCounts.get(c) ?? 0) + 1)
+    }
+  }
+  if (chunk.length < pageSize) break
+  pFrom += pageSize
+}
+
+/** Первое число из кода вида P301+P312 */
+function parsePNumber(code: string): number | null {
+  const m = /^P(\d+)/.exec(code.trim())
+  return m ? parseInt(m[1], 10) : null
+}
+
+function pBucket(code: string): 'general' | 'prevention' | 'response' | 'storage' | 'disposal' | 'other' {
+  const n = parsePNumber(code)
+  if (n === null) return 'other'
+  if (n >= 100 && n <= 103) return 'general'
+  if (n >= 200 && n <= 285) return 'prevention'
+  if (n >= 301 && n <= 391) return 'response'
+  if (n >= 401 && n <= 420) return 'storage'
+  if (n >= 501 && n <= 502) return 'disposal'
+  return 'other'
+}
+
+const general = statements.filter((s) => pBucket(s.code) === 'general')
+const prevention = statements.filter((s) => pBucket(s.code) === 'prevention')
+const response = statements.filter((s) => pBucket(s.code) === 'response')
+const storage = statements.filter((s) => pBucket(s.code) === 'storage')
+const disposal = statements.filter((s) => pBucket(s.code) === 'disposal')
+const other = statements.filter((s) => pBucket(s.code) === 'other')
+
+const sections: { id: string; title: string; rows: typeof statements }[] = [
+  { id: 'general', title: 'General (P100–P103)', rows: general },
+  { id: 'prevention', title: 'Prevention (P200–P285)', rows: prevention },
+  { id: 'response', title: 'Response (P301–P391)', rows: response },
+  { id: 'storage', title: 'Storage (P401–P420)', rows: storage },
+  { id: 'disposal', title: 'Disposal (P501–P502)', rows: disposal },
+]
+
+if (other.length > 0) {
+  sections.push({ id: 'other', title: 'Other / combined P-codes', rows: other })
+}
+
+const itemListJson = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'GHS Precautionary Statements (P-statements)',
+  numberOfItems: statements.length,
+  itemListElement: statements.map((s, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: s.code,
+    url: `${siteUrl}/p-statements/${encodeURIComponent(s.code)}/`,
+  })),
+})
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <script type="application/ld+json" slot="head" set:html={itemListJson} />
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <nav class="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="text-[#062A78] hover:underline">Home</a>
+      <span class="mx-2">→</span>
+      <span class="text-gray-700">P-Statements</span>
+    </nav>
+
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight" style="font-family: 'Space Grotesk', system-ui, sans-serif">
+      GHS Precautionary Statements (P-Statements) — Complete Reference
+    </h1>
+
+    <p class="mt-6 text-gray-700 leading-relaxed text-lg">
+      Precautionary statements (P-phrases) tell users how to minimise or prevent adverse effects from exposure to hazardous chemicals, or how to respond to accidents and dispose of waste safely.
+      Under GHS and CLP they are grouped into general, prevention, response, storage, and disposal types. Combined codes such as P301+P312 appear as single entries where the official text merges two statements.
+      This reference lists every P-code in our database with English wording and counts of harmonised Annex VI substances that include each code. Verify always with the supplier SDS for your mixture or product.
+    </p>
+
+    <p class="mt-4">
+      <a href="/hazards/" class="text-[#062A78] font-semibold hover:underline">Browse substances in the GHS Hazard Database →</a>
+    </p>
+
+    {
+      sections.map((sec) => (
+        <section class="mt-12" id={sec.id}>
+          <h2 class="text-2xl font-bold text-gray-900 mb-4" style="font-family: 'Space Grotesk', system-ui, sans-serif">
+            {sec.title}
+          </h2>
+          <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+            <table class="min-w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-gray-100 text-left text-gray-800">
+                  <th class="px-4 py-3 font-semibold border-b border-gray-200">Код</th>
+                  <th class="px-4 py-3 font-semibold border-b border-gray-200">Описание</th>
+                  <th class="px-4 py-3 font-semibold border-b border-gray-200 whitespace-nowrap">Число веществ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sec.rows.map((row) => {
+                  const n = pCounts.get(row.code) ?? 0
+                  return (
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 align-top whitespace-nowrap">
+                        <a
+                          href={`/p-statements/${encodeURIComponent(row.code)}/`}
+                          class="text-blue-700 font-mono font-bold hover:underline"
+                        >
+                          {row.code}
+                        </a>
+                      </td>
+                      <td class="px-4 py-3 text-gray-800 align-top">{row.text_en}</td>
+                      <td class="px-4 py-3 text-gray-500 align-top whitespace-nowrap">{n > 0 ? String(n) : '—'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))
+    }
+
+    <p class="mt-10 text-sm text-gray-500">
+      Hazard (H) statements: <a href="/h-statements/" class="text-[#062A78] font-medium hover:underline">GHS H-Statements reference →</a>
+    </p>
+  </div>
+</Layout>
