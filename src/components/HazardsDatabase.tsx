@@ -251,10 +251,13 @@ export default function HazardsDatabase() {
                 aria-pressed={isPictogramActive(code)}
               >
                 {meta?.svgContent ? (
-                  <div
-                    style={{ width: 36, height: 36 }}
-                    dangerouslySetInnerHTML={{ __html: meta.svgContent }}
-                  />
+                  <div style={{ width: 36, height: 36, overflow: 'hidden', flexShrink: 0 }}>
+                    <div
+                      style={{ width: 36, height: 36 }}
+                      dangerouslySetInnerHTML={{ __html: meta.svgContent }}
+                      className="[&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full"
+                    />
+                  </div>
                 ) : meta?.src ? (
                   <img src={meta.src} alt="" width={36} height={36} className="object-contain" />
                 ) : (
@@ -330,11 +333,13 @@ export default function HazardsDatabase() {
                     {s.ghs_pictogram_codes.map((code) => {
                       const meta = picByCode[code]
                       return meta?.svgContent ? (
-                        <div
-                          key={code}
-                          style={{ width: 16, height: 16, flexShrink: 0 }}
-                          dangerouslySetInnerHTML={{ __html: meta.svgContent }}
-                        />
+                        <div key={code} style={{ width: 16, height: 16, overflow: 'hidden', flexShrink: 0 }}>
+                          <div
+                            style={{ width: 16, height: 16 }}
+                            dangerouslySetInnerHTML={{ __html: meta.svgContent }}
+                            className="[&>svg]:w-full [&>svg]:h-full"
+                          />
+                        </div>
                       ) : meta?.src ? (
                         <img
                           key={code}
