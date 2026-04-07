@@ -16,7 +16,11 @@ export interface SubstanceRow {
   ghs_pictogram_codes: string[]
 }
 
-type PictogramMeta = { src: string | null; label: string }
+type PictogramMeta = {
+  src: string | null
+  label: string
+  svgContent?: string | null
+}
 
 function normalizeRow(row: Record<string, unknown>): SubstanceRow {
   const codes = row.ghs_pictogram_codes
@@ -88,7 +92,7 @@ export default function HazardsDatabase() {
 
         const meta: Record<string, PictogramMeta> = {}
         for (const c of GHS_CODES) {
-          meta[c] = { src: null, label: c }
+          meta[c] = { src: null, label: c, svgContent: null }
         }
         for (const row of picRes.data ?? []) {
           const code = row.code as string
@@ -97,6 +101,7 @@ export default function HazardsDatabase() {
           meta[code] = {
             src,
             label: (row.name_en as string) || code,
+            svgContent: (row.svg_content as string | null) || null,
           }
         }
         setPicByCode(meta)
@@ -245,7 +250,12 @@ export default function HazardsDatabase() {
                 }`}
                 aria-pressed={isPictogramActive(code)}
               >
-                {meta?.src ? (
+                {meta?.svgContent ? (
+                  <div
+                    style={{ width: 36, height: 36 }}
+                    dangerouslySetInnerHTML={{ __html: meta.svgContent }}
+                  />
+                ) : meta?.src ? (
                   <img src={meta.src} alt="" width={36} height={36} className="object-contain" />
                 ) : (
                   <span className="text-[10px] font-bold text-gray-600">{code}</span>
@@ -319,7 +329,13 @@ export default function HazardsDatabase() {
                   <div className="flex items-center gap-2 flex-wrap shrink-0">
                     {s.ghs_pictogram_codes.map((code) => {
                       const meta = picByCode[code]
-                      return meta?.src ? (
+                      return meta?.svgContent ? (
+                        <div
+                          key={code}
+                          style={{ width: 16, height: 16, flexShrink: 0 }}
+                          dangerouslySetInnerHTML={{ __html: meta.svgContent }}
+                        />
+                      ) : meta?.src ? (
                         <img
                           key={code}
                           src={meta.src}
