@@ -11,6 +11,8 @@ type SubstancePathRow = {
   ghs_pictogram_codes: string[] | null
   signal_word: string | null
   flash_point: number | null
+  molecular_formula: string | null
+  ec_number: string | null
 }
 
 export async function getStaticPaths() {
@@ -21,7 +23,7 @@ export async function getStaticPaths() {
   while (true) {
     const { data } = await supabase
       .from('substances')
-      .select('cas_number, iupac_name, common_name, h_statement_codes, ghs_pictogram_codes, signal_word, flash_point')
+      .select('cas_number, iupac_name, common_name, h_statement_codes, ghs_pictogram_codes, signal_word, flash_point, molecular_formula, ec_number')
       .not('cas_number', 'is', null)
       .range(from, from + pageSize - 1)
 
@@ -39,12 +41,14 @@ export async function getStaticPaths() {
       picCodes: (s.ghs_pictogram_codes ?? []) as string[],
       signalWord: (s.signal_word ?? '') as string,
       flashPoint: s.flash_point as number | null,
+      molecularFormula: s.molecular_formula as string | null,
+      ecNumber: s.ec_number as string | null,
     },
   }))
 }
 
 const { cas } = Astro.params
-const { name, hCodes, picCodes, signalWord, flashPoint } = Astro.props
+const { name, hCodes, picCodes, signalWord, flashPoint, molecularFormula, ecNumber } = Astro.props
 
 function buildSeoBlocks(
   hCodes: string[],
@@ -151,4 +155,31 @@ if (cas === '112-90-3') {
       </p>
     </section>
   )}
+
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'ChemicalSubstance',
+      name,
+      identifier: cas,
+      url: `https://ghssymbols.com/hazards/${cas}`,
+      ...(molecularFormula ? { molecularFormula } : {}),
+      ...(ecNumber
+        ? {
+            additionalProperty: {
+              '@type': 'PropertyValue',
+              name: 'EC Number',
+              value: ecNumber,
+            },
+          }
+        : {}),
+      potentialAction: {
+        '@type': 'ViewAction',
+        target: `https://ghssymbols.com/hazards/${cas}`,
+      },
+      description: `GHS/CLP hazard classification and H-statements for ${name}. CAS ${cas}.`,
+      ...(signalWord ? { warning: signalWord } : {}),
+    })}
+  />
 </Layout>
