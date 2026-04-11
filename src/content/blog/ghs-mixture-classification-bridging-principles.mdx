@@ -1,0 +1,197 @@
+---
+title: "GHS Mixture Classification: Bridging Principles Explained"
+description: "How to classify hazardous mixtures under GHS when no test data is available. A practical guide to bridging principles — dilution, concentration, interpolation, and cut-off thresholds for EHS professionals and chemists."
+pubDate: 2026-04-12
+author: "GHS Symbols Editorial Team"
+tags: ["GHS", "mixture classification", "bridging principles", "CLP", "toxicology", "EHS"]
+---
+
+When a chemical mixture has not been tested as a whole, GHS provides a structured methodology for deriving its hazard classification from the properties of its individual components. This methodology — known as **bridging principles** — is one of the most important and most misunderstood aspects of GHS implementation.
+
+This guide focuses on the bridging principles themselves: when they apply, how to use them, and where they interact with concentration cut-off thresholds. For the ATE additivity formula specifically, see our separate guide [How to Calculate ATE for Chemical Mixtures](/blog/how-to-calculate-ate-for-chemical-mixtures/).
+
+---
+
+## Why Bridging Principles Exist
+
+Testing every possible mixture formulation for acute toxicity, skin corrosion, carcinogenicity, and other endpoints is neither practical nor ethical. A manufacturer who changes a solvent ratio or adjusts a preservative concentration would otherwise need to commission a full new test programme.
+
+GHS solves this by allowing classification to be **derived** from existing data using logical, scientifically defensible rules. The EU CLP Regulation (Annex I, Part 1.1.3) and the UN GHS Purple Book (Chapter 1.1) both codify these principles.
+
+---
+
+## The Six Bridging Principles
+
+### 1. Dilution
+
+**When it applies:** A tested mixture is diluted with a diluent that has no hazard for the endpoint in question, and the diluent does not affect the hazard of other components.
+
+**Rule:** The diluted mixture is classified as equivalent to the original mixture, proportionally adjusted.
+
+| Scenario | Original mixture | Diluent added | Result |
+|---|---|---|---|
+| Flammable liquid | Flash point 18°C (Cat 2) | 30% water added | Recalculate — water raises flash point |
+| Acute oral tox | Cat 3 (ATEmix = 120 mg/kg) | 50% non-toxic diluent | New ATEmix = 240 mg/kg → Cat 4 |
+
+**Limitation:** Dilution bridging does not apply when the diluent interacts chemically with components (e.g. adding water to an acid changes its corrosive profile non-linearly).
+
+---
+
+### 2. Batching
+
+**When it applies:** A new production batch of the same mixture is produced, and the manufacturer has reason to believe it is toxicologically equivalent to a previously classified batch.
+
+**Rule:** The new batch may use the classification of the previously tested batch without re-testing, provided the same ingredients are used, concentration variations are within specified limits, and no new hazardous impurities are introduced.
+
+**Practical use:** This is the most commonly used bridging principle in industrial manufacturing. It underpins the validity of SDS classification across production runs.
+
+**Important:** Batching does not cover formulation changes. A change in ingredient source (e.g. switching solvent supplier) may introduce different impurity profiles that invalidate the bridging.
+
+---
+
+### 3. Concentration of Highly Toxic Mixtures
+
+**When it applies:** A classified mixture falls into the most severe hazard category for a given endpoint (e.g. Acute Tox Category 1), and the concentration of hazardous components is increased.
+
+**Rule:** The more concentrated mixture is classified in the same or more severe category without re-testing.
+
+**Example:** A cleaning agent classified as Acute Tox Cat 1 (oral) at 10% active ingredient is reformulated to 15% active ingredient. Under this principle, the 15% formulation is classified as at least Cat 1 — the manufacturer does not need to justify moving to a lower category without new data.
+
+---
+
+### 4. Interpolation Within One Toxicity Category
+
+**When it applies:** Three versions of a mixture exist — A (low concentration), B (medium), C (high) — and A and C have been tested and classified in the same hazard category.
+
+**Rule:** Mixture B may be classified in the same category without testing, provided the ratio of hazardous to non-hazardous components changes monotonically between A and C.
+
+**Example:**
+
+| Mixture | Active content | Classification |
+|---|---|---|
+| Mixture A | 5% | Cat 3 (tested) |
+| Mixture B | 10% | Cat 3 (by interpolation) |
+| Mixture C | 15% | Cat 3 (tested) |
+
+**Where this breaks down:** If the concentration-response relationship is non-linear (e.g. due to synergistic effects at intermediate concentrations), interpolation may underestimate hazard. Always verify with component-level additivity calculation where possible.
+
+---
+
+### 5. Substantially Similar Mixtures
+
+**When it applies:** Two mixtures share most components, and one has been classified. The difference between them is limited to substitution of one non-hazardous component with another non-hazardous component, or a change in concentration of a non-hazardous component.
+
+**Rule:** The unclassified mixture may adopt the classification of the tested mixture.
+
+| Component | Mixture A (tested) | Mixture B (untested) |
+|---|---|---|
+| Ethanol (flammable, toxic) | 20% | 20% |
+| Isopropanol (flammable) | 10% | 10% |
+| Fragrance A (no hazard) | 5% | — |
+| Fragrance B (no hazard) | — | 5% |
+| Water | 65% | 65% |
+
+Mixture B may use Mixture A's classification — the only change is substitution of one non-hazardous fragrance for another.
+
+**Critical check:** Verify that the substituted component truly has no hazard for the relevant endpoint. A component classified as "not hazardous" for acute toxicity may still be a skin sensitiser — the substantially similar principle applies endpoint by endpoint.
+
+---
+
+### 6. Aerosol Classification
+
+**When it applies:** A non-aerosol mixture is classified and is subsequently converted to an aerosol formulation by adding a propellant.
+
+**Rule:** The aerosol may be classified identically to the non-aerosol concentrate for health and environmental endpoints (acute toxicity, skin/eye effects, CMR, etc.), provided the propellant does not affect those hazard categories.
+
+**Note:** Flammability classification of aerosols is governed by separate rules — aerosol bridging does not override the aerosol flammability test requirements under CLP.
+
+---
+
+## Concentration Cut-Off Thresholds: When Components Must Be Included
+
+Before applying any bridging principle, you must know which components trigger classification in the first place. GHS defines **generic cut-off values** below which a component's contribution to a specific hazard is considered negligible.
+
+| Hazard endpoint | Generic cut-off | Notes |
+|---|---|---|
+| Acute toxicity (all routes) | ≥ 1% | Components below 1% ignored unless M-factor applies |
+| Skin corrosion/irritation | ≥ 1% | |
+| Serious eye damage | ≥ 1% | |
+| Respiratory sensitisation | ≥ 1% | |
+| Skin sensitisation | ≥ 0.1% | Lower threshold than respiratory |
+| Germ cell mutagenicity Cat 1A/1B | ≥ 0.1% | |
+| Germ cell mutagenicity Cat 2 | ≥ 1% | |
+| Carcinogenicity Cat 1A/1B | ≥ 0.1% | |
+| Carcinogenicity Cat 2 | ≥ 1% | |
+| Reproductive toxicity Cat 1A/1B | ≥ 0.1% | |
+| Reproductive toxicity Cat 2 | ≥ 1% | |
+| STOT SE Cat 1 | ≥ 1% | |
+| STOT RE Cat 1 | ≥ 1% | |
+| Aquatic toxicity acute Cat 1 | ≥ 0.1% | Lower with M-factor |
+
+---
+
+## The M-Factor Multiplier for Aquatic Toxicity
+
+For substances with very high aquatic toxicity (EC50 or LC50 ≤ 1 mg/L), a **multiplication factor (M-factor)** is applied to lower the effective cut-off threshold:
+
+| Acute toxicity range | M-factor |
+|---|---|
+| 0.1 < L(E)C50 ≤ 1 mg/L | 1 |
+| 0.01 < L(E)C50 ≤ 0.1 mg/L | 10 |
+| 0.001 < L(E)C50 ≤ 0.01 mg/L | 100 |
+| 0.0001 < L(E)C50 ≤ 0.001 mg/L | 1000 |
+
+**Practical example:** A mixture contains 0.05% of a substance with acute aquatic LC50 of 0.05 mg/L (M-factor = 10). Effective concentration for classification = 0.05% × 10 = 0.5% — above the 0.1% cut-off, so this substance must be included in the aquatic hazard classification of the mixture.
+
+---
+
+## Bridging Principles vs Additivity Calculation: When to Use Each
+
+| Situation | Recommended approach |
+|---|---|
+| Full ingredient list with ATE values available | Additivity formula (ATEmix) |
+| Similar mixture with tested batch exists | Batching or substantially similar |
+| Diluted version of tested mixture | Dilution bridging |
+| Three concentrations tested, middle unknown | Interpolation |
+| Aerosol version of classified liquid | Aerosol bridging |
+| No similar tested mixture, no ATE values | Component cut-off analysis |
+| Synergistic effects suspected | Do not use bridging — commission testing |
+
+---
+
+## Common Classification Errors to Avoid
+
+**1. Applying dilution bridging to reactive mixtures**
+Water added to a concentrated acid does not simply dilute the hazard — it changes the physical chemistry. Always check for reactive diluents.
+
+**2. Ignoring the 0.1% threshold for CMR components**
+A carcinogen at 0.08% may seem below the cut-off, but check whether it is a Cat 1A/1B carcinogen (0.1% threshold) or Cat 2 (1% threshold). Many formulators make this error.
+
+**3. Using substantially similar bridging across endpoints**
+A mixture may be substantially similar for acute toxicity but not for skin sensitisation — if the substituted component is a sensitiser even at low concentration.
+
+**4. Assuming bridging overrides experimental data**
+If you have test data showing a different result than bridging would predict, the test data takes precedence.
+
+**5. Not documenting the bridging rationale**
+Regulators and downstream users may challenge your classification. Document which bridging principle was applied and why, even if the SDS itself does not narrate this in detail.
+
+---
+
+## Official References
+
+- [UN GHS Purple Book Rev. 10 — Chapter 1.1.3](https://unece.org/transport/dangerous-goods/ghs-rev10-2023)
+- [CLP Regulation (EC) No 1272/2008 — Annex I Part 1.1.3](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02008R1272-20231001)
+- [ECHA Guidance on Classification and Labelling](https://echa.europa.eu/guidance-documents/guidance-on-clp)
+
+---
+
+## Tools
+
+- ⚗️ [ATE Mixture Calculator](/tools/ate-calculator/) — Calculate ATEmix using the GHS additivity formula
+- 🔍 [Substance Hazard Database](/hazards/) — Look up individual component classifications
+- 🏪 [Chemical Storage Matrix](/tools/storage-matrix/) — Segregation requirements for your classified mixture
+
+---
+
+*This guide covers GHS Rev. 10 and CLP Regulation as amended to 2024. Classification decisions should be reviewed by a qualified toxicologist or regulatory chemist before use in commercial SDS documentation.*
