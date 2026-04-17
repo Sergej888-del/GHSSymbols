@@ -120,6 +120,29 @@ function buildSeoBlocks(
 
 const seoBlocks = buildSeoBlocks(hCodes, picCodes, signalWord, flashPoint, name)
 
+/** Title ≤60 символов: «[Name] GHS Hazard Classification | GHS Symbols»; имя >30 → …; при переполнении имя ужимается под лимит. */
+function buildHazardPageTitle(displayName: string): string {
+  const SUFFIX = ' GHS Hazard Classification'
+  const BRAND = ' | GHS Symbols'
+  const MAX = 60
+
+  let namePart = displayName.length > 30 ? `${displayName.slice(0, 27)}...` : displayName
+  let full = `${namePart}${SUFFIX}${BRAND}`
+  if (full.length <= MAX) return full
+
+  const tailLen = SUFFIX.length + BRAND.length
+  const maxName = MAX - tailLen
+  if (maxName < 3) {
+    return `${SUFFIX.trim()}${BRAND}`.slice(0, MAX)
+  }
+  namePart =
+    displayName.length > maxName ? `${displayName.slice(0, maxName - 3)}...` : displayName
+  full = `${namePart}${SUFFIX}${BRAND}`
+  return full.length > MAX ? full.slice(0, MAX) : full
+}
+
+const pageTitle = buildHazardPageTitle(name)
+
 if (cas === '112-90-3') {
   console.log('DEBUG 112-90-3:', {
     hCodes,
@@ -132,7 +155,8 @@ if (cas === '112-90-3') {
 ---
 
 <Layout
-  title={`${name} — GHS Hazard Information`}
+  title={pageTitle}
+  titleIsComplete={true}
   description={`GHS/CLP hazard classification, H-statements and pictograms for ${name}. CAS ${cas}.`}
   canonical={`https://ghssymbols.com/hazards/${cas}/`}
 >

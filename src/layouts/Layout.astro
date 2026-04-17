@@ -6,13 +6,18 @@ interface Props {
   title: string
   description?: string
   canonical?: string
+  /** Если true — в title и og:title только `title`, без « | GHS Symbols» (SEO-строка уже полная). */
+  titleIsComplete?: boolean
 }
 
 const {
   title,
   description = 'GHS hazard symbols, H-statements, ATE calculator and chemical safety tools for EHS professionals.',
-  canonical
+  canonical,
+  titleIsComplete = false,
 } = Astro.props
+
+const pageTitle = titleIsComplete ? title : `${title} | GHS Symbols`
 
 const siteUrl = 'https://ghssymbols.com'
 const base = Astro.site ?? siteUrl
@@ -40,7 +45,7 @@ const canonicalURL = canonical
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
-    <title>{title} | GHS Symbols</title>
+    <title>{pageTitle}</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,7 +56,7 @@ const canonicalURL = canonical
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content={`${title} | GHS Symbols`} />
+    <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:type" content="website" />
