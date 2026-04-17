@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro'
+import { truncateMetaDescription } from '../../lib/metaDescription'
 import { getCollection, render } from 'astro:content'
 
 export async function getStaticPaths() {
@@ -14,11 +15,13 @@ const { post } = Astro.props
 if (!post) return Astro.redirect('/blog')
 
 const { Content } = await render(post)
+
+const description = truncateMetaDescription(post.data.description)
 ---
 
 <Layout
   title={post.data.title}
-  description={post.data.description}
+  description={description}
   canonical={`https://ghssymbols.com/blog/${post.id}/`}
 >
   <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import SubstancePage from '../../components/SubstancePage'
+import { truncateMetaDescription } from '../../lib/metaDescription'
 import { supabase } from '../../lib/supabase'
 
 type SubstancePathRow = {
@@ -143,6 +144,26 @@ function buildHazardPageTitle(displayName: string): string {
 
 const pageTitle = buildHazardPageTitle(name)
 
+function buildHazardDescription(name: string, cas: string): string {
+  const suffix = `. CAS ${cas}. View pictograms, signal word and precautionary statements.`
+  const prefix = 'GHS hazard classification and H-statements for '
+  const maxNameLen = 155 - prefix.length - suffix.length
+
+  let namePart = name
+  if (name.length > maxNameLen) {
+    const truncated = name.slice(0, maxNameLen - 3)
+    const lastSpace = truncated.lastIndexOf(' ')
+    namePart =
+      lastSpace > 10 ? truncated.slice(0, lastSpace) + '...' : truncated + '...'
+  }
+
+  let result = `${prefix}${namePart}${suffix}`
+  if (result.length > 155) result = truncateMetaDescription(result)
+  return result
+}
+
+const pageDescription = buildHazardDescription(name, cas)
+
 if (cas === '112-90-3') {
   console.log('DEBUG 112-90-3:', {
     hCodes,
@@ -157,7 +178,7 @@ if (cas === '112-90-3') {
 <Layout
   title={pageTitle}
   titleIsComplete={true}
-  description={`GHS/CLP hazard classification, H-statements and pictograms for ${name}. CAS ${cas}.`}
+  description={pageDescription}
   canonical={`https://ghssymbols.com/hazards/${cas}/`}
 >
   <SubstancePage client:load initialCas={cas} />

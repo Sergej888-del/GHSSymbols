@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro'
+import { truncateMetaDescription } from '../../lib/metaDescription'
 import { supabase } from '../../lib/supabase'
 
 const siteUrl = 'https://ghssymbols.com'
@@ -49,7 +50,9 @@ const prevCode = idx > 0 ? orderedCodes[idx - 1] : null
 const nextCode = idx >= 0 && idx < orderedCodes.length - 1 ? orderedCodes[idx + 1] : null
 
 const title = `${p.code} Precautionary Statement — GHS/CLP Definition and Examples`
-const description = `${p.code}: ${p.text_en.slice(0, 140)}${p.text_en.length > 140 ? '…' : ''} See which substances include this precautionary statement.`
+const description = truncateMetaDescription(
+  `${p.code}: ${p.text_en} See which substances include this precautionary statement.`
+)
 const canonical = `${siteUrl}/p-statements/${encodeURIComponent(p.code)}/`
 
 const definedTermJson = JSON.stringify({

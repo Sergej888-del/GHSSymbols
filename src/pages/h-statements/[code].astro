@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro'
+import { truncateMetaDescription } from '../../lib/metaDescription'
 import { supabase } from '../../lib/supabase'
 
 const siteUrl = 'https://ghssymbols.com'
@@ -49,7 +50,9 @@ const prevCode = idx > 0 ? orderedCodes[idx - 1] : null
 const nextCode = idx >= 0 && idx < orderedCodes.length - 1 ? orderedCodes[idx + 1] : null
 
 const title = `${h.code} Hazard Statement — GHS/CLP Definition and Examples`
-const description = `${h.code}: ${h.text_en.slice(0, 140)}${h.text_en.length > 140 ? '…' : ''} See which substances carry this hazard statement.`
+const description = truncateMetaDescription(
+  `${h.code}: ${h.text_en} See which substances carry this hazard statement.`
+)
 const canonical = `${siteUrl}/h-statements/${encodeURIComponent(h.code)}/`
 
 const definedTermJson = JSON.stringify({
