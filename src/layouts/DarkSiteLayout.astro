@@ -10,6 +10,16 @@ interface Props {
 }
 
 const { title, description, canonical, ogTitle = title } = Astro.props
+
+function ensureTrailingSlashUrl(href: string): string {
+  const u = new URL(href)
+  if (u.pathname !== '/' && !u.pathname.endsWith('/')) {
+    u.pathname += '/'
+  }
+  return u.href
+}
+
+const canonicalURL = ensureTrailingSlashUrl(canonical)
 ---
 
 <!DOCTYPE html>
@@ -19,7 +29,7 @@ const { title, description, canonical, ogTitle = title } = Astro.props
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,7 +39,7 @@ const { title, description, canonical, ogTitle = title } = Astro.props
     />
     <meta property="og:title" content={ogTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:type" content="website" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1Y5MKV5XMK"></script>
     <script is:inline>

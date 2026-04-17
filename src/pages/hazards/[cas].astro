@@ -134,7 +134,7 @@ if (cas === '112-90-3') {
 <Layout
   title={`${name} — GHS Hazard Information`}
   description={`GHS/CLP hazard classification, H-statements and pictograms for ${name}. CAS ${cas}.`}
-  canonical={`https://ghssymbols.com/hazards/${cas}`}
+  canonical={`https://ghssymbols.com/hazards/${cas}/`}
 >
   <SubstancePage client:load initialCas={cas} />
 
@@ -163,7 +163,7 @@ if (cas === '112-90-3') {
       '@type': 'ChemicalSubstance',
       name,
       identifier: cas,
-      url: `https://ghssymbols.com/hazards/${cas}`,
+      url: `https://ghssymbols.com/hazards/${cas}/`,
       ...(molecularFormula ? { molecularFormula } : {}),
       ...(ecNumber
         ? {
@@ -176,7 +176,7 @@ if (cas === '112-90-3') {
         : {}),
       potentialAction: {
         '@type': 'ViewAction',
-        target: `https://ghssymbols.com/hazards/${cas}`,
+        target: `https://ghssymbols.com/hazards/${cas}/`,
       },
       description: `GHS/CLP hazard classification and H-statements for ${name}. CAS ${cas}.`,
       ...(signalWord ? { warning: signalWord } : {}),
