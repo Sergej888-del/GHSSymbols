@@ -48,9 +48,11 @@ const H_STATEMENT_STYLE = 'bg-red-50 border-red-200 text-red-800'
 
 interface Props {
   initialCas?: string
+  /** Если true — заголовок вещества уже в статическом HTML (Astro); второй h1 не рендерим */
+  suppressTitleHeading?: boolean
 }
 
-export default function SubstancePage({ initialCas }: Props = {}) {
+export default function SubstancePage({ initialCas, suppressTitleHeading }: Props = {}) {
   const [substance, setSubstance] = useState<SubstanceData | null>(null)
   const [pictograms, setPictograms] = useState<Pictogram[]>([])
   const [hStatements, setHStatements] = useState<HStatement[]>([])
@@ -255,20 +257,29 @@ export default function SubstancePage({ initialCas }: Props = {}) {
   if (notFound || !substance) return (
     <div className="max-w-4xl mx-auto px-4 py-20 text-center">
       <p className="text-gray-600 mb-4">Substance not found.</p>
-      <a href="/hazards" className="text-orange-600 hover:underline">← Back to database</a>
+      <a href="/hazards/" className="text-orange-600 hover:underline">← Back to database</a>
     </div>
   )
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${suppressTitleHeading ? 'pt-6 pb-12' : 'py-12'}`}>
 
       {/* Заголовок */}
       <div className="mb-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{substance.iupac_name}</h1>
-            {substance.common_name && (
-              <p className="text-lg text-gray-500 mt-1">{substance.common_name}</p>
+            {!suppressTitleHeading ? (
+              <>
+                <h1 className="text-3xl font-bold text-gray-900">{substance.iupac_name}</h1>
+                {substance.common_name && (
+                  <p className="text-lg text-gray-500 mt-1">{substance.common_name}</p>
+                )}
+              </>
+            ) : (
+              substance.common_name &&
+              substance.iupac_name !== substance.common_name && (
+                <p className="text-sm text-gray-500">IUPAC: {substance.iupac_name}</p>
+              )
             )}
           </div>
           <button
@@ -425,7 +436,7 @@ export default function SubstancePage({ initialCas }: Props = {}) {
               </div>
             )}
           </dl>
-          <a href={`/tools/ate-calculator?substance=${substance.cas_number}`}
+          <a href={`/tools/ate-calculator/?substance=${substance.cas_number}`}
             className="text-sm font-medium text-orange-600 hover:text-orange-700">
             Use in ATE Calculator →
           </a>
@@ -442,7 +453,7 @@ export default function SubstancePage({ initialCas }: Props = {}) {
         </section>
       )}
 
-      <a href="/hazards" className="text-sm text-gray-500 hover:text-orange-600">← Back to database</a>
+      <a href="/hazards/" className="text-sm text-gray-500 hover:text-orange-600">← Back to database</a>
 
       {/* Модалка email */}
       {emailModal && (

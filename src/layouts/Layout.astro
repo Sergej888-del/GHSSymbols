@@ -8,6 +8,8 @@ interface Props {
   canonical?: string
   /** Если true — в title и og:title только `title`, без « | GHS Symbols» (SEO-строка уже полная). */
   titleIsComplete?: boolean
+  /** Абсолютный URL превью для Open Graph / Twitter */
+  image?: string
 }
 
 const {
@@ -15,9 +17,11 @@ const {
   description = 'GHS hazard symbols, H-statements, ATE calculator and chemical safety tools for EHS professionals.',
   canonical,
   titleIsComplete = false,
+  image,
 } = Astro.props
 
 const pageTitle = titleIsComplete ? title : `${title} | GHS Symbols`
+const ogImage = image ?? 'https://ghssymbols.com/og-default.png'
 
 const siteUrl = 'https://ghssymbols.com'
 const base = Astro.site ?? siteUrl
@@ -60,6 +64,12 @@ const canonicalURL = canonical
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="GHS Symbols" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
     <slot name="head" />
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1Y5MKV5XMK"></script>
@@ -80,13 +90,13 @@ const canonicalURL = canonical
 
         <!-- Десктоп меню -->
         <ul class="hidden md:flex items-center gap-6 text-sm font-medium text-blue-200">
-          <li><a href="/tools/ate-calculator" class="hover:text-white transition-colors">ATE Calculator</a></li>
-          <li><a href="/tools/storage-matrix" class="hover:text-white transition-colors">Storage Matrix</a></li>
-          <li><a href="/hazards" class="hover:text-white transition-colors">Hazards DB</a></li>
-          <li><a href="/h-statements" class="hover:text-white transition-colors">H-Statements</a></li>
-          <li><a href="/p-statements" class="hover:text-white transition-colors">P-Statements</a></li>
-          <li><a href="/blog" class="hover:text-white transition-colors">Blog</a></li>
-          <li><a href="/faq" class="hover:text-white transition-colors">FAQ</a></li>
+          <li><a href="/tools/ate-calculator/" class="hover:text-white transition-colors">ATE Calculator</a></li>
+          <li><a href="/tools/storage-matrix/" class="hover:text-white transition-colors">Storage Matrix</a></li>
+          <li><a href="/hazards/" class="hover:text-white transition-colors">Hazards DB</a></li>
+          <li><a href="/h-statements/" class="hover:text-white transition-colors">H-Statements</a></li>
+          <li><a href="/p-statements/" class="hover:text-white transition-colors">P-Statements</a></li>
+          <li><a href="/blog/" class="hover:text-white transition-colors">Blog</a></li>
+          <li><a href="/faq/" class="hover:text-white transition-colors">FAQ</a></li>
         </ul>
 
         <!-- Бургер-меню для мобильных -->
@@ -97,13 +107,13 @@ const canonicalURL = canonical
             </svg>
           </summary>
           <ul class="absolute right-0 top-full mt-1 w-52 bg-[#062A78] border border-blue-700 rounded-xl shadow-xl py-2 text-sm font-medium text-blue-200">
-            <li><a href="/tools/ate-calculator" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">ATE Calculator</a></li>
-            <li><a href="/tools/storage-matrix" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Storage Matrix</a></li>
-            <li><a href="/hazards" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Hazards DB</a></li>
-            <li><a href="/h-statements" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">H-Statements</a></li>
-            <li><a href="/p-statements" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">P-Statements</a></li>
-            <li><a href="/blog" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Blog</a></li>
-            <li><a href="/faq" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">FAQ</a></li>
+            <li><a href="/tools/ate-calculator/" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">ATE Calculator</a></li>
+            <li><a href="/tools/storage-matrix/" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Storage Matrix</a></li>
+            <li><a href="/hazards/" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Hazards DB</a></li>
+            <li><a href="/h-statements/" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">H-Statements</a></li>
+            <li><a href="/p-statements/" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">P-Statements</a></li>
+            <li><a href="/blog/" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">Blog</a></li>
+            <li><a href="/faq/" class="block px-5 py-3 hover:bg-blue-800 hover:text-white transition-colors">FAQ</a></li>
           </ul>
         </details>
       </nav>

@@ -181,7 +181,10 @@ if (cas === '112-90-3') {
   description={pageDescription}
   canonical={`https://ghssymbols.com/hazards/${cas}/`}
 >
-  <SubstancePage client:load initialCas={cas} />
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-0">
+    <h1 class="text-3xl font-bold text-gray-900">{name}</h1>
+  </section>
+  <SubstancePage client:load initialCas={cas} suppressTitleHeading />
 
   {seoBlocks.length > 0 && (
     <section class="max-w-4xl mx-auto px-4 pb-12 mt-8">

@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props
-if (!post) return Astro.redirect('/blog')
+if (!post) return Astro.redirect('/blog/')
 
 const { Content } = await render(post)
 
@@ -30,7 +30,7 @@ const description = truncateMetaDescription(post.data.description)
     <nav class="text-sm text-gray-400 mb-8">
       <a href="/" class="hover:text-gray-600">Home</a>
       <span class="mx-2">›</span>
-      <a href="/blog" class="hover:text-gray-600">Blog</a>
+      <a href="/blog/" class="hover:text-gray-600">Blog</a>
       <span class="mx-2">›</span>
       <span class="text-gray-600">{post.data.title}</span>
     </nav>
@@ -83,12 +83,12 @@ const description = truncateMetaDescription(post.data.description)
 
     <!-- Нижняя навигация -->
     <div class="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-start">
-      <a href="/blog" class="text-sm text-gray-500 hover:text-blue-700">← All articles</a>
+      <a href="/blog/" class="text-sm text-gray-500 hover:text-blue-700">← All articles</a>
       <div class="flex gap-3">
-        <a href="/tools/ate-calculator" class="text-sm font-medium text-orange-600 hover:text-orange-700">
+        <a href="/tools/ate-calculator/" class="text-sm font-medium text-orange-600 hover:text-orange-700">
           ATE Calculator →
         </a>
-        <a href="/hazards" class="text-sm font-medium text-blue-700 hover:text-blue-800">
+        <a href="/hazards/" class="text-sm font-medium text-blue-700 hover:text-blue-800">
           Hazards DB →
         </a>
       </div>
