@@ -3,18 +3,25 @@ import Layout from '../../layouts/Layout.astro'
 import SubstancePage from '../../components/SubstancePage'
 import { truncateMetaDescription } from '../../lib/metaDescription'
 import { supabase } from '../../lib/supabase'
+import {
+  buildRelatedByCas,
+  type SubstanceForRelated,
+} from '../../lib/relatedSubstances'
 
-type SubstancePathRow = {
-  cas_number: string
-  iupac_name: string
-  common_name: string | null
-  h_statement_codes: string[] | null
-  ghs_pictogram_codes: string[] | null
-  signal_word: string | null
+type SubstancePathRow = SubstanceForRelated & {
   flash_point: number | null
   molecular_formula: string | null
   ec_number: string | null
 }
+
+type SimilarProp = {
+  cas_number: string
+  common_name: string | null
+  iupac_name: string
+  signal_word: string | null
+}
+
+type StatementLink = { code: string; text_en: string }
 
 export async function getStaticPaths() {
   let allSubstances: SubstancePathRow[] = []
@@ -24,7 +31,9 @@ export async function getStaticPaths() {
   while (true) {
     const { data } = await supabase
       .from('substances')
-      .select('cas_number, iupac_name, common_name, h_statement_codes, ghs_pictogram_codes, signal_word, flash_point, molecular_formula, ec_number')
+      .select(
+        'cas_number, iupac_name, common_name, h_statement_codes, ghs_pictogram_codes, signal_word, flash_point, molecular_formula, ec_number, p_statement_codes'
+      )
       .not('cas_number', 'is', null)
       .range(from, from + pageSize - 1)
 
@@ -34,22 +43,84 @@ export async function getStaticPaths() {
     from += pageSize
   }
 
-  return allSubstances.map((s) => ({
-    params: { cas: s.cas_number },
-    props: {
-      name: s.common_name || s.iupac_name,
-      hCodes: (s.h_statement_codes ?? []) as string[],
-      picCodes: (s.ghs_pictogram_codes ?? []) as string[],
-      signalWord: (s.signal_word ?? '') as string,
-      flashPoint: s.flash_point as number | null,
-      molecularFormula: s.molecular_formula as string | null,
-      ecNumber: s.ec_number as string | null,
-    },
-  }))
+  const [{ data: hRows }, { data: pRows }] = await Promise.all([
+    supabase.from('h_statements').select('code, text_en'),
+    supabase.from('p_statements').select('code, text_en'),
+  ])
+
+  const hText = new Map<string, string>()
+  for (const r of hRows ?? []) {
+    hText.set((r as { code: string }).code, (r as { text_en: string }).text_en)
+  }
+  const pText = new Map<string, string>()
+  for (const r of pRows ?? []) {
+    pText.set((r as { code: string }).code, (r as { text_en: string }).text_en)
+  }
+
+  const relatedByCas = buildRelatedByCas(allSubstances, 8)
+
+  return allSubstances.map((s) => {
+    const hCodes = (s.h_statement_codes ?? []) as string[]
+    const pCodes = (s.p_statement_codes ?? []) as string[]
+    const hStatementLinks: StatementLink[] = hCodes.map((code) => ({
+      code,
+      text_en: hText.get(code) ?? '',
+    }))
+    const pStatementLinks: StatementLink[] = pCodes.map((code) => ({
+      code,
+      text_en: pText.get(code) ?? '',
+    }))
+
+    const similarRaw = relatedByCas.get(s.cas_number) ?? []
+    const similarSubstances: SimilarProp[] = similarRaw.map((r) => ({
+      cas_number: r.cas_number,
+      common_name: r.common_name,
+      iupac_name: r.iupac_name,
+      signal_word: r.signal_word,
+    }))
+
+    return {
+      params: { cas: s.cas_number },
+      props: {
+        name: s.common_name || s.iupac_name,
+        hCodes,
+        picCodes: (s.ghs_pictogram_codes ?? []) as string[],
+        signalWord: (s.signal_word ?? '') as string,
+        flashPoint: s.flash_point as number | null,
+        molecularFormula: s.molecular_formula as string | null,
+        ecNumber: s.ec_number as string | null,
+        similarSubstances,
+        hStatementLinks,
+        pStatementLinks,
+      },
+    }
+  })
 }
 
 const { cas } = Astro.params
-const { name, hCodes, picCodes, signalWord, flashPoint, molecularFormula, ecNumber } = Astro.props
+const {
+  name,
+  hCodes,
+  picCodes,
+  signalWord,
+  flashPoint,
+  molecularFormula,
+  ecNumber,
+  similarSubstances,
+  hStatementLinks,
+  pStatementLinks,
+} = Astro.props as {
+  name: string
+  hCodes: string[]
+  picCodes: string[]
+  signalWord: string
+  flashPoint: number | null
+  molecularFormula: string | null
+  ecNumber: string | null
+  similarSubstances: SimilarProp[]
+  hStatementLinks: StatementLink[]
+  pStatementLinks: StatementLink[]
+}
 
 function buildSeoBlocks(
   hCodes: string[],
@@ -163,16 +234,6 @@ function buildHazardDescription(name: string, cas: string): string {
 }
 
 const pageDescription = buildHazardDescription(name, cas)
-
-if (cas === '112-90-3') {
-  console.log('DEBUG 112-90-3:', {
-    hCodes,
-    picCodes,
-    signalWord,
-    flashPoint,
-    seoBlocks,
-  })
-}
 ---
 
 <Layout
@@ -203,6 +264,66 @@ if (cas === '112-90-3') {
       </p>
     </section>
   )}
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    {similarSubstances.length > 0 && (
+      <section class="mt-12 border-t border-gray-200 pt-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          Substances with similar hazards
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {similarSubstances.map((s) => (
+            <a
+              href={`/hazards/${encodeURIComponent(s.cas_number)}/`}
+              class="border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-colors"
+            >
+              <div class="font-semibold text-sm text-gray-900 line-clamp-3">
+                {s.common_name || s.iupac_name}
+              </div>
+              <div class="text-xs text-gray-500 mt-1">CAS {s.cas_number}</div>
+              {s.signal_word && (
+                <div class="text-xs font-medium text-amber-700 mt-1">{s.signal_word}</div>
+              )}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {hStatementLinks.length > 0 && (
+      <section class="mt-8">
+        <h3 class="font-bold text-gray-900 mb-2">Related H-Statements</h3>
+        <div class="flex flex-wrap gap-2">
+          {hStatementLinks.map((h) => (
+            <a
+              href={`/h-statements/${encodeURIComponent(h.code)}/`}
+              class="px-3 py-1 bg-orange-100 text-gray-900 rounded hover:bg-orange-200 text-sm leading-snug max-w-full"
+            >
+              {h.code}
+              {h.text_en ? `: ${h.text_en}` : ''}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {pStatementLinks.length > 0 && (
+      <section class="mt-8">
+        <h3 class="font-bold text-gray-900 mb-2">Related P-Statements</h3>
+        <div class="flex flex-wrap gap-2">
+          {pStatementLinks.map((p) => (
+            <a
+              href={`/p-statements/${encodeURIComponent(p.code)}/`}
+              class="px-3 py-1 bg-teal-100 text-gray-900 rounded hover:bg-teal-200 text-sm leading-snug max-w-full"
+            >
+              {p.code}
+              {p.text_en ? `: ${p.text_en}` : ''}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
 
   <script
     type="application/ld+json"
