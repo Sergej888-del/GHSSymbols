@@ -1,0 +1,31 @@
+# GHS Symbols
+
+> Chemical hazard reference and toxicology tools for EHS professionals: GHS classification, mixture ATE calculator, storage compatibility matrix, and per-substance hazard pages for 4,178 CLP Annex VI substances.
+
+## Tools
+
+- [Mixture ATE Calculator](https://ghssymbols.com/tools/ate-calculator/): Compute Acute Toxicity Estimate for mixtures using the GHS additive formula and bridging principles, with PDF export
+- [Chemical Storage Compatibility Matrix](https://ghssymbols.com/tools/storage-matrix/): Determine which chemicals can be stored together based on GHS hazard classes and segregation rules
+
+## Substance Database
+
+- [Hazards Database](https://ghssymbols.com/hazards/): 4,178 substances from EU CLP Annex VI with harmonised classifications, GHS pictograms, signal words, H/P-statements, ATE values, and physical properties
+
+## Reference
+
+- [H-Statements](https://ghssymbols.com/h-statements/): Hazard statement codes (H200–H420) with full text, classification context, and example substances
+- [P-Statements](https://ghssymbols.com/p-statements/): Precautionary statement codes (P100–P500) with full text and usage guidance
+- [Blog](https://ghssymbols.com/blog/): In-depth articles on GHS signal words, chemical storage, H/P-statements, GHS vs OSHA HCS 2024, SVHC/REACH, bridging principles, and CMR substances
+- [FAQ](https://ghssymbols.com/faq/): Common questions on GHS classification, hazard symbols, and chemical safety
+
+## Sister sites
+
+- [ghspictograms.com](https://ghspictograms.com): GHS pictogram library, CLP-compliant label constructor, GHS vs ADR/DOT transport inspector, and Compliance Hub (UN GHS, OSHA HCS, CLP, SDS guides)
+- [ghslabels.com](https://ghslabels.com): Certified GHS label ordering (BS5609 marine grade)
+
+## Data
+
+- 4,178 substances from EU CLP Annex VI (harmonised classification list)
+- ATE values, H-statements, P-statements, GHS pictograms for each substance
+- Mixture ATE Calculator implements the GHS Annex 3 additive formula
+- Storage Matrix derived from GHS hazard class segregation rules
