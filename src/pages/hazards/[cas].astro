@@ -43,6 +43,11 @@ export async function getStaticPaths() {
     from += pageSize
   }
 
+  // Exclude substances with corrupted cas_number (mixtures truncated by varchar(20)
+  // at the opening bracket, producing broken URLs like /hazards/463-04-7[1]110-46-3[/ ).
+  // 156 records, 0 clicks. To be fixed separately via data re-import.
+  allSubstances = allSubstances.filter((s) => !s.cas_number.includes('['))
+
   const [{ data: hRows }, { data: pRows }] = await Promise.all([
     supabase.from('h_statements').select('code, text_en'),
     supabase.from('p_statements').select('code, text_en'),
