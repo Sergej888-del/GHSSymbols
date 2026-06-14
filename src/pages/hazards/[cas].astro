@@ -270,6 +270,27 @@ const pageDescription = buildHazardDescription(name, cas)
     </section>
   )}
 
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+    <a
+      href="https://ghspictograms.com/compliance/sds/"
+      class="block rounded-lg border border-blue-200 bg-blue-50 p-5 hover:bg-blue-100 transition-colors"
+    >
+      <div class="text-xs font-semibold uppercase tracking-wide text-blue-700">
+        GHS Ecosystem · Compliance Hub
+      </div>
+      <div class="mt-1 font-semibold text-gray-900">
+        From classification to SDS
+      </div>
+      <p class="mt-2 text-sm text-gray-700 leading-relaxed">
+        The GHS classification shown above for {name} corresponds to Section 2 of its
+        Safety Data Sheet. Learn how a compliant 16-section SDS is structured and authored.
+      </p>
+      <div class="mt-3 text-sm font-medium text-blue-700">
+        Read the SDS compliance guide →
+      </div>
+    </a>
+  </section>
+
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
     {similarSubstances.length > 0 && (
       <section class="mt-12 border-t border-gray-200 pt-8">
