@@ -1,4 +1,4 @@
-# robots.txt for ghssymbols.com
+﻿# robots.txt for ghssymbols.com
 # Last updated: 2026-05-10
 # Strategy: open access for AI crawlers (search + training)
 # Rationale: B2B compliance content benefits from AI citation visibility
@@ -7,6 +7,7 @@
 # ─── Default ─────────────────────────────────────────────
 User-agent: *
 Allow: /
+Disallow: /*?substance=
 
 # ─── AI Search / Retrieval crawlers ──────────────────────
 # These bots fetch pages in real time when a user asks an AI assistant.
