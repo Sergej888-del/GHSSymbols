@@ -251,7 +251,27 @@ const pageDescription = buildHazardDescription(name, cas)
     <h1 class="text-3xl font-bold text-gray-900">{name}</h1>
   </section>
   <SubstancePage client:load initialCas={cas} suppressTitleHeading />
-
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+    <a
+      href="https://ghspictograms.com/pictogram-selector/"
+      class="block rounded-lg border border-sky-200 bg-sky-50 p-5 hover:bg-sky-100 transition-colors"
+    >
+      <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">
+        GHS Ecosystem · Pictogram Selector
+      </div>
+      <div class="mt-1 font-semibold text-gray-900">
+        Build the label for {name}
+      </div>
+      <p class="mt-2 text-sm text-gray-700 leading-relaxed">
+        See how the hazards of {name} combine into label elements for your jurisdiction
+        (EU CLP, GB CLP, OSHA HazCom) — the correct pictograms, signal word and H-statements,
+        with CLP Article&nbsp;26 precedence applied and explained.
+      </p>
+      <div class="mt-3 text-sm font-medium text-sky-700">
+        Open the GHS Pictogram Selector →
+      </div>
+    </a>
+  </section>
   {seoBlocks.length > 0 && (
     <section class="max-w-4xl mx-auto px-4 pb-12 mt-8">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">
