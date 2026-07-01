@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import SubstancePage from '../../components/SubstancePage'
+import SharePage from '../../components/SharePage.astro'
 import { truncateMetaDescription } from '../../lib/metaDescription'
 import { supabase } from '../../lib/supabase'
 import {
@@ -249,6 +250,9 @@ const pageDescription = buildHazardDescription(name, cas)
 >
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-0">
     <h1 class="text-3xl font-bold text-gray-900">{name}</h1>
+  </section>
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-0">
+    <SharePage url={`https://ghssymbols.com/hazards/${cas}/`} title={`${name} — GHS hazards & classification`} />
   </section>
   <SubstancePage client:load initialCas={cas} suppressTitleHeading />
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
