@@ -24,6 +24,29 @@ type SimilarProp = {
 
 type StatementLink = { code: string; text_en: string }
 
+/**
+ * Раздел H-фраз переехал на ghspictograms.com (session 22).
+ * Девять суффиксных кодов CLP Annex VI §1.1.2.1.2 живут там под читаемым слагом —
+ * `H360FD` и `H360Fd` различаются только регистром последней буквы, и это семантика.
+ * Первоисточник таблицы: ghspictograms/src/lib/hStatementSlug.ts.
+ */
+const H_SUFFIXED_SLUGS: Record<string, string> = {
+  H350i: 'H350i-cancer-by-inhalation',
+  H360F: 'H360F-may-damage-fertility',
+  H360D: 'H360D-may-damage-unborn-child',
+  H360FD: 'H360FD-fertility-and-unborn-child',
+  H360Fd: 'H360Fd-fertility-and-suspected-unborn-child',
+  H360Df: 'H360Df-unborn-child-and-suspected-fertility',
+  H361f: 'H361f-suspected-damaging-fertility',
+  H361d: 'H361d-suspected-damaging-unborn-child',
+  H361fd: 'H361fd-suspected-fertility-and-unborn-child',
+}
+
+const hStatementHref = (code: string): string =>
+  `https://ghspictograms.com/h-statements/${encodeURIComponent(
+    H_SUFFIXED_SLUGS[code] ?? code
+  )}/`
+
 export async function getStaticPaths() {
   let allSubstances: SubstancePathRow[] = []
   let from = 0
@@ -346,7 +369,7 @@ const pageDescription = buildHazardDescription(name, cas)
         <div class="flex flex-wrap gap-2">
           {hStatementLinks.map((h) => (
             <a
-              href={`/h-statements/${encodeURIComponent(h.code)}/`}
+              href={hStatementHref(h.code)}
               class="px-3 py-1 bg-orange-100 text-gray-900 rounded hover:bg-orange-200 text-sm leading-snug max-w-full"
             >
               {h.code}

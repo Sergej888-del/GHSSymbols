@@ -3,3 +3,39 @@
 /tools/ate-calculator https://ghspictograms.com/tools/ate-mixture-calculator/ 301
 /p-statements https://ghspictograms.com/p-statements/ 301
 /p-statements/* https://ghspictograms.com/p-statements/:splat 301
+
+# --- /h-statements/ moved to ghspictograms.com (session 22) ---
+# 1. Nine CLP Annex VI suffix codes changed their URL: the code page now carries a
+#    readable slug. The wildcard at the bottom would send them to a 404, so each one
+#    needs its own rule, in both the slashed and the unslashed form.
+#    ORDER MATTERS: H360FD sits above H360Fd on purpose. The two differ only in the
+#    case of the last letter, Cloudflare does not document whether _redirects matching
+#    is case-sensitive, and if it is not, the heavier code must win (57 substances vs 6).
+/h-statements/H360D https://ghspictograms.com/h-statements/H360D-may-damage-unborn-child/ 301
+/h-statements/H360D/ https://ghspictograms.com/h-statements/H360D-may-damage-unborn-child/ 301
+/h-statements/H361f https://ghspictograms.com/h-statements/H361f-suspected-damaging-fertility/ 301
+/h-statements/H361f/ https://ghspictograms.com/h-statements/H361f-suspected-damaging-fertility/ 301
+/h-statements/H361d https://ghspictograms.com/h-statements/H361d-suspected-damaging-unborn-child/ 301
+/h-statements/H361d/ https://ghspictograms.com/h-statements/H361d-suspected-damaging-unborn-child/ 301
+/h-statements/H350i https://ghspictograms.com/h-statements/H350i-cancer-by-inhalation/ 301
+/h-statements/H350i/ https://ghspictograms.com/h-statements/H350i-cancer-by-inhalation/ 301
+/h-statements/H360FD https://ghspictograms.com/h-statements/H360FD-fertility-and-unborn-child/ 301
+/h-statements/H360FD/ https://ghspictograms.com/h-statements/H360FD-fertility-and-unborn-child/ 301
+/h-statements/H360Df https://ghspictograms.com/h-statements/H360Df-unborn-child-and-suspected-fertility/ 301
+/h-statements/H360Df/ https://ghspictograms.com/h-statements/H360Df-unborn-child-and-suspected-fertility/ 301
+/h-statements/H360F https://ghspictograms.com/h-statements/H360F-may-damage-fertility/ 301
+/h-statements/H360F/ https://ghspictograms.com/h-statements/H360F-may-damage-fertility/ 301
+/h-statements/H361fd https://ghspictograms.com/h-statements/H361fd-suspected-fertility-and-unborn-child/ 301
+/h-statements/H361fd/ https://ghspictograms.com/h-statements/H361fd-suspected-fertility-and-unborn-child/ 301
+/h-statements/H360Fd https://ghspictograms.com/h-statements/H360Fd-fertility-and-suspected-unborn-child/ 301
+/h-statements/H360Fd/ https://ghspictograms.com/h-statements/H360Fd-fertility-and-suspected-unborn-child/ 301
+
+# 2. Paginated substance lists /h-statements/<code>/page/<n>/ have no counterpart on
+#    ghspictograms (the code page carries the full A-Z list). 96 such URLs existed
+#    across 30 codes; none of the nine suffix codes above ever had one.
+/h-statements/:code/page/:n https://ghspictograms.com/h-statements/:code/ 301
+/h-statements/:code/page/:n/ https://ghspictograms.com/h-statements/:code/ 301
+
+# 3. Everything else is 1:1, including all EUH codes.
+/h-statements https://ghspictograms.com/h-statements/ 301
+/h-statements/* https://ghspictograms.com/h-statements/:splat 301
