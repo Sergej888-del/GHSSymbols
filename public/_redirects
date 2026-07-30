@@ -1,3 +1,5 @@
 /hazards/view/* /hazards/ 301
 /tools/ate-calculator/ https://ghspictograms.com/tools/ate-mixture-calculator/ 301
 /tools/ate-calculator https://ghspictograms.com/tools/ate-mixture-calculator/ 301
+/p-statements https://ghspictograms.com/p-statements/ 301
+/p-statements/* https://ghspictograms.com/p-statements/:splat 301

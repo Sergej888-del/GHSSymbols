@@ -14,7 +14,7 @@
 ## Reference
 
 - [H-Statements](https://ghssymbols.com/h-statements/): Hazard statement codes (H200–H420) with full text, classification context, and example substances
-- [P-Statements](https://ghssymbols.com/p-statements/): Precautionary statement codes (P100–P500) with full text and usage guidance
+- [P-Statements](https://ghspictograms.com/p-statements/): Precautionary statement codes (P101–P503) with full text, CLP Annex IV wording, official combinations, and jurisdiction status (EU CLP / OSHA / UN GHS) — hosted on ghspictograms.com
 - [Blog](https://ghssymbols.com/blog/): In-depth articles on GHS signal words, chemical storage, H/P-statements, GHS vs OSHA HCS 2024, SVHC/REACH, bridging principles, and CMR substances
 - [FAQ](https://ghssymbols.com/faq/): Common questions on GHS classification, hazard symbols, and chemical safety
 
