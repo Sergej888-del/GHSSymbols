@@ -8,6 +8,7 @@ import {
   buildRelatedByCas,
   type SubstanceForRelated,
 } from '../../lib/relatedSubstances'
+import { substanceName, substanceNameFull } from '../../lib/substanceName'
 
 type SubstancePathRow = SubstanceForRelated & {
   flash_point: number | null
@@ -18,6 +19,7 @@ type SubstancePathRow = SubstanceForRelated & {
 type SimilarProp = {
   cas_number: string
   common_name: string | null
+  display_name_short: string | null
   iupac_name: string
   signal_word: string | null
 }
@@ -56,7 +58,7 @@ export async function getStaticPaths() {
     const { data } = await supabase
       .from('substances')
       .select(
-        'cas_number, iupac_name, common_name, h_statement_codes, ghs_pictogram_codes, signal_word, flash_point, molecular_formula, ec_number, p_statement_codes'
+        'cas_number, iupac_name, common_name, display_name_short, h_statement_codes, ghs_pictogram_codes, signal_word, flash_point, molecular_formula, ec_number, p_statement_codes'
       )
       .not('cas_number', 'is', null)
       .range(from, from + pageSize - 1)
@@ -104,6 +106,7 @@ export async function getStaticPaths() {
     const similarSubstances: SimilarProp[] = similarRaw.map((r) => ({
       cas_number: r.cas_number,
       common_name: r.common_name,
+      display_name_short: r.display_name_short,
       iupac_name: r.iupac_name,
       signal_word: r.signal_word,
     }))
@@ -111,7 +114,7 @@ export async function getStaticPaths() {
     return {
       params: { cas: s.cas_number },
       props: {
-        name: s.common_name || s.iupac_name,
+        name: substanceNameFull(s),
         hCodes,
         picCodes: (s.ghs_pictogram_codes ?? []) as string[],
         signalWord: (s.signal_word ?? '') as string,
@@ -350,8 +353,8 @@ const pageDescription = buildHazardDescription(name, cas)
               href={`/hazards/${encodeURIComponent(s.cas_number)}/`}
               class="border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-colors"
             >
-              <div class="font-semibold text-sm text-gray-900 line-clamp-3">
-                {s.common_name || s.iupac_name}
+              <div class="font-semibold text-sm text-gray-900 line-clamp-3" title={substanceNameFull(s)}>
+                {substanceName(s)}
               </div>
               <div class="text-xs text-gray-500 mt-1">CAS {s.cas_number}</div>
               {s.signal_word && (

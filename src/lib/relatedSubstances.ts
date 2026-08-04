@@ -3,6 +3,7 @@
 export type SubstanceForRelated = {
   cas_number: string
   common_name: string | null
+  display_name_short: string | null
   iupac_name: string
   h_statement_codes: string[] | null
   ghs_pictogram_codes: string[] | null

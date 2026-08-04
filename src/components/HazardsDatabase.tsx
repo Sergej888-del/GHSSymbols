@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import Fuse from 'fuse.js'
 import { supabase } from '../lib/supabase'
+import { substanceName, substanceNameFull, truncateName } from '../lib/substanceName'
 
 const PAGE_SIZE = 1000
 const GHS_CODES = ['GHS01', 'GHS02', 'GHS03', 'GHS04', 'GHS05', 'GHS06', 'GHS07', 'GHS08', 'GHS09'] as const
@@ -10,6 +11,7 @@ export interface SubstanceRow {
   id: string
   iupac_name: string
   common_name: string | null
+  display_name_short: string | null
   cas_number: string | null
   svhc_status: boolean
   signal_word: string | null
@@ -28,6 +30,7 @@ function normalizeRow(row: Record<string, unknown>): SubstanceRow {
     id: String(row.id),
     iupac_name: String(row.iupac_name ?? ''),
     common_name: (row.common_name as string | null) ?? null,
+    display_name_short: (row.display_name_short as string | null) ?? null,
     cas_number: (row.cas_number as string | null) ?? null,
     svhc_status: Boolean(row.svhc_status),
     signal_word: (row.signal_word as string | null) ?? null,
@@ -40,7 +43,7 @@ async function fetchAllSubstances(): Promise<SubstanceRow[]> {
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await supabase
       .from('substances')
-      .select('id, iupac_name, common_name, cas_number, svhc_status, signal_word, ghs_pictogram_codes')
+      .select('id, iupac_name, common_name, display_name_short, cas_number, svhc_status, signal_word, ghs_pictogram_codes')
       .order('iupac_name')
       .range(from, from + PAGE_SIZE - 1)
 
@@ -107,7 +110,7 @@ export default function HazardsDatabase() {
         setPicByCode(meta)
 
         fuseRef.current = new Fuse(substances, {
-          keys: ['iupac_name', 'common_name', 'cas_number'],
+          keys: ['iupac_name', 'common_name', 'display_name_short', 'cas_number'],
           threshold: 0.3,
           includeScore: true,
         })
@@ -324,9 +327,13 @@ export default function HazardsDatabase() {
                   className="flex flex-wrap items-center gap-3 py-4 px-1 sm:px-0 hover:text-orange-600 transition-colors group"
                 >
                   <div className="flex-1 min-w-[12rem]">
-                    <span className="font-medium group-hover:text-orange-600">{s.iupac_name}</span>
-                    {s.common_name && (
-                      <span className="ml-2 text-sm text-gray-500">({s.common_name})</span>
+                    <span className="font-medium group-hover:text-orange-600" title={substanceNameFull(s)}>
+                      {substanceName(s)}
+                    </span>
+                    {s.iupac_name && s.iupac_name !== substanceNameFull(s) && (
+                      <span className="ml-2 text-sm text-gray-500" title={s.iupac_name}>
+                        ({truncateName(s.iupac_name)})
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 flex-wrap shrink-0">

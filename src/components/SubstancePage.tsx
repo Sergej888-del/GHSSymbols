@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { submitLeadCapture } from '../lib/submitLeadCapture'
+import { substanceNameFull } from '../lib/substanceName'
 
 interface Pictogram {
   code: string
@@ -26,6 +27,7 @@ interface SubstanceData {
   id: string
   iupac_name: string
   common_name: string | null
+  display_name_short: string | null
   cas_number: string | null
   ec_number: string | null
   un_number: string | null
@@ -74,7 +76,7 @@ export default function SubstancePage({ initialCas, suppressTitleHeading }: Prop
       if (!cas && !id) { setNotFound(true); setLoading(false); return }
 
       let q = supabase.from('substances').select(
-        'id, iupac_name, common_name, cas_number, ec_number, un_number, ' +
+        'id, iupac_name, common_name, display_name_short, cas_number, ec_number, un_number, ' +
         'molecular_formula, molecular_weight, flash_point, boiling_point, ' +
         'ate_oral, ate_dermal, ate_inhalation_vapour, svhc_status, svhc_reason, ' +
         'h_statement_codes, ghs_pictogram_codes, signal_word, p_statement_codes'
@@ -148,7 +150,7 @@ export default function SubstancePage({ initialCas, suppressTitleHeading }: Prop
   const downloadPdf = () => {
     if (!substance) return
     const date = new Date().toLocaleDateString('en-GB')
-    const name = substance.common_name ?? substance.iupac_name
+    const name = substanceNameFull(substance)
 
     const hRows = hStatements.map(h =>
       `<tr><td style="font-weight:600;font-family:monospace;white-space:nowrap">${h.code}</td><td>${h.text_en}</td></tr>`
@@ -196,8 +198,8 @@ export default function SubstancePage({ initialCas, suppressTitleHeading }: Prop
         svg { max-width: 100%; max-height: 100%; }
       </style></head><body>
 
-      <h1>${substance.iupac_name}</h1>
-      ${substance.common_name ? `<div class="sub">${substance.common_name}</div>` : ''}
+      <h1>${name}</h1>
+      ${substance.iupac_name && substance.iupac_name !== name ? `<div class="sub">${substance.iupac_name}</div>` : ''}
       <div class="meta">
         ${substance.cas_number ? `CAS: ${substance.cas_number} &nbsp;` : ''}
         ${substance.ec_number  ? `EC: ${substance.ec_number} &nbsp;`   : ''}
@@ -268,16 +270,19 @@ export default function SubstancePage({ initialCas, suppressTitleHeading }: Prop
       <div className="mb-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
+            {/* Заголовок — человеческое имя (substanceNameFull). Второй строкой —
+                полная строка Annex VI (iupac_name), когда она отличается: это и есть
+                «длинное химическое имя как альтернатива». Обрезать здесь нельзя. */}
             {!suppressTitleHeading ? (
               <>
-                <h1 className="text-3xl font-bold text-gray-900">{substance.iupac_name}</h1>
-                {substance.common_name && (
-                  <p className="text-lg text-gray-500 mt-1">{substance.common_name}</p>
+                <h1 className="text-3xl font-bold text-gray-900">{substanceNameFull(substance)}</h1>
+                {substance.iupac_name !== substanceNameFull(substance) && (
+                  <p className="text-lg text-gray-500 mt-1">{substance.iupac_name}</p>
                 )}
               </>
             ) : (
-              substance.common_name &&
-              substance.iupac_name !== substance.common_name && (
+              // h1 уже отрисован статически в [cas].astro как substanceNameFull()
+              substance.iupac_name !== substanceNameFull(substance) && (
                 <p className="text-sm text-gray-500">IUPAC: {substance.iupac_name}</p>
               )
             )}

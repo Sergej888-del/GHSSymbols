@@ -3,10 +3,12 @@
 import Layout from '../../layouts/Layout.astro'
 import HazardsDatabase from '../../components/HazardsDatabase'
 import { supabase } from '../../lib/supabase'
+import { substanceName, substanceNameFull } from '../../lib/substanceName'
 
 type Row = {
   cas_number: string
   common_name: string | null
+  display_name_short: string | null
   iupac_name: string
 }
 
@@ -16,7 +18,7 @@ const pageSize = 1000
 while (true) {
   const { data } = await supabase
     .from('substances')
-    .select('cas_number, common_name, iupac_name')
+    .select('cas_number, common_name, display_name_short, iupac_name')
     .not('cas_number', 'is', null)
     .order('iupac_name', { ascending: true })
     .range(from, from + pageSize - 1)
@@ -27,8 +29,9 @@ while (true) {
   from += pageSize
 }
 
+// Полное имя: по нему считается буква алфавитного указателя и оно идёт в title=
 function displayName(s: Row): string {
-  return (s.common_name || s.iupac_name || '').trim()
+  return substanceNameFull(s)
 }
 
 function firstLetter(name: string): string {
@@ -87,8 +90,9 @@ const letters = Object.keys(grouped).sort((a, b) => {
                 <a
                   href={`/hazards/${encodeURIComponent(s.cas_number)}/`}
                   class="text-[#062A78] hover:underline font-medium"
+                  title={displayName(s)}
                 >
-                  {displayName(s)}
+                  {substanceName(s)}
                 </a>
                 <span class="text-gray-400 font-mono text-xs ml-2">CAS {s.cas_number}</span>
               </li>
