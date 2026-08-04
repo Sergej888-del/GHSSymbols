@@ -30,7 +30,13 @@ const canonicalURL = ensureTrailingSlashUrl(canonical)
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    {/* ⚠ Вторая копия блока значков: этот макет НЕ оборачивает Layout.astro,
+        а живёт сам по себе. Правку значков делать в обоих. Разбор — Layout.astro. */}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#062a78" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -41,6 +47,14 @@ const canonicalURL = ensureTrailingSlashUrl(canonical)
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:type" content="website" />
+    {/* ⚠⚠ og:image здесь не было ВОВСЕ — страницы этого макета уходили в соцсети
+        вообще без картинки. Адрес абсолютный: Facebook и LinkedIn относительный
+        путь не разрешают и показывают пустое место. */}
+    <meta property="og:image" content="https://ghssymbols.com/og-default.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://ghssymbols.com/og-default.png" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1Y5MKV5XMK"></script>
     <script is:inline>
       window.dataLayer = window.dataLayer || []

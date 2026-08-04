@@ -56,10 +56,26 @@ const canonicalURL = canonical
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Favicon -->
+    <!--
+      Значки (session 37). ⚠⚠ Здесь стояла ОДНА строка, а public/favicon.ico
+      оставался дефолтным значком Astro — чёрный квадрат с ракетой. md5 у него
+      совпадал во всех трёх репозиториях экосистемы.
+      ⚠ .ico несёт три кадра (16, 32, 48), кадр 16 нарисован по пиксельной сетке.
+      ⚠ apple-touch-icon непрозрачный: iOS подставляет под прозрачность чёрный.
+      ⚠ Акцент знака здесь sky-300 #7dd3fc — им ghssymbols отличается от
+      ghspictograms (teal-300) и ghslabels (brass-300).
+    -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#062a78" />
 
     <!-- Open Graph -->
+    {/* ⚠⚠ og-default.png был ПРОЗРАЧНЫМ ПИКСЕЛЕМ 1 × 1 на 70 байт — каждое
+        превью ссылки в соцсетях выходило пустым. Теперь 1200 × 630. */}
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
