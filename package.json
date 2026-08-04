@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "import:clp": "node scripts/import-clp.mjs"
+    "import:clp": "node scripts/import-clp.mjs",
+    "generate:substance-redirects": "node scripts/generate-substance-redirect-map.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.7",

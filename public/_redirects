@@ -1,4 +1,11 @@
-/hazards/view/* /hazards/ 301
+# --- /hazards/ moved to ghspictograms.com/substances/ (session 36) ---
+# Постраничные адреса /hazards/<cas>/ уводит Pages Function functions/hazards/[cas].js
+# по карте CAS -> слаг. Здесь закрывается САМ раздел и его старая форма /view/.
+# ⚠ /hazards/view/ ведём сразу в конечную точку, а не через /hazards/: цепочка из
+# двух 301 теряет часть веса и удлиняет ответ.
+/hazards/view/* https://ghspictograms.com/substances/ 301
+/hazards/ https://ghspictograms.com/substances/ 301
+/hazards https://ghspictograms.com/substances/ 301
 /tools/ate-calculator/ https://ghspictograms.com/tools/ate-mixture-calculator/ 301
 /tools/ate-calculator https://ghspictograms.com/tools/ate-mixture-calculator/ 301
 /p-statements https://ghspictograms.com/p-statements/ 301

@@ -259,7 +259,7 @@ export default function SubstancePage({ initialCas, suppressTitleHeading }: Prop
   if (notFound || !substance) return (
     <div className="max-w-4xl mx-auto px-4 py-20 text-center">
       <p className="text-gray-600 mb-4">Substance not found.</p>
-      <a href="/hazards/" className="text-orange-600 hover:underline">← Back to database</a>
+      <a href="https://ghspictograms.com/substances/" className="text-orange-600 hover:underline">← Back to database</a>
     </div>
   )
 
@@ -458,7 +458,7 @@ export default function SubstancePage({ initialCas, suppressTitleHeading }: Prop
         </section>
       )}
 
-      <a href="/hazards/" className="text-sm text-gray-500 hover:text-orange-600">← Back to database</a>
+      <a href="https://ghspictograms.com/substances/" className="text-sm text-gray-500 hover:text-orange-600">← Back to database</a>
 
       {/* Модалка email */}
       {emailModal && (
