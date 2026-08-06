@@ -20,7 +20,7 @@
 
 ## Sister sites
 
-- [ghspictograms.com](https://ghspictograms.com): GHS pictogram library, CLP-compliant label constructor, GHS vs ADR/DOT transport inspector, and Compliance Hub (UN GHS, OSHA HCS, CLP, SDS guides)
+- [ghspictograms.com](https://ghspictograms.com): GHS pictogram library, CLP-compliant label constructor, UN number transport reference (ADR 2025 and 49 CFR 172.101 side by side), and Compliance Hub (UN GHS, OSHA HCS, CLP, SDS guides)
 - [ghslabels.com](https://ghslabels.com): Certified GHS label ordering (BS5609 marine grade)
 
 ## Data
