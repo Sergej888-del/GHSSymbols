@@ -1,0 +1,39 @@
+# Заголовки ответа для Cloudflare Pages — ghssymbols.com
+#
+# ⚠ Пока здесь ТОЛЬКО запрет индексации технического домена *.pages.dev.
+# Кэш-заголовки НЕ заданы НАМЕРЕННО: чтобы они действовали, в Cloudflare этой
+# зоны обязана стоять Caching → Configuration → Browser Cache TTL =
+# «Respect Existing Headers». Для зоны ghssymbols.com это НЕ проверено (session 73),
+# а неверная настройка перебивает файл МОЛЧА — так было на ghspictograms до
+# session 66. Готовый образец с кэшем — ghspictograms/public/_headers.
+#
+# Синтаксис: строка с путём, следом строки заголовков с отступом в два пробела.
+
+
+# ── Технический домен Cloudflare Pages ──────────────────────────────────────
+#
+# ⛔ Проблема (session 73): ghssymbols.pages.dev отдаёт ВЕСЬ сайт с кодом 200.
+# Для поисковика это второй экземпляр сайта на чужом домене — тот же контент по
+# двум адресам. Зональными правилами Cloudflare он не лечится: домен .pages.dev
+# лежит ВНЕ нашей зоны, и ни Redirect Rules, ни Page Rules его не видят.
+#
+# ⭐ Абсолютный URL в правиле — документированная возможность Cloudflare Pages.
+# «:project» и «:version» — ПЛЕЙСХОЛДЕРЫ, подставляются сами; вписывать сюда
+# настоящее имя проекта НЕ нужно. Второе правило накрывает превью-деплои вида
+# <hash>.ghssymbols.pages.dev.
+#
+# ⚠ Это noindex, а НЕ редирект: страница остаётся доступной (её открывает сам
+# Cloudflare при сборке), но поисковику запрещено держать её в индексе.
+# Canonical на apex в разметке уже стоит — заголовок страхует его на случай,
+# если краулер до разметки не дошёл.
+#
+# ⭐ Проверка после деплоя (обязательно с -A, иначе наш же WAF отдаст 403):
+#   curl.exe -sI -A "Mozilla/5.0" https://ghssymbols.pages.dev/ | Select-String "HTTP/|x-robots"
+#   curl.exe -sI -A "Mozilla/5.0" https://ghssymbols.com/  | Select-String "HTTP/|x-robots"
+# Первая обязана показать noindex, вторая — не показать его вовсе.
+
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
